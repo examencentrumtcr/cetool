@@ -2,15 +2,13 @@
    Deze tool is gemaakt door Benvindo Neves
 #>
 
-<#
 $programma = @(
     versie = "0.3.0"
-    extralabel = "+9.250718"
+    extralabel = "+9.250715"
     mode = "alpha" # alpha, beta, prerelease, release, update
     auteur = "Benvindo Neves"
-    github = "examencentrumtcr/cetool"
 )
-#>
+
 
 # toevoegen .NET framework klassen
 Add-Type -AssemblyName System.Windows.Forms
@@ -735,26 +733,15 @@ Function Controleerupdate {
 
     # Vanaf hier start de controle op een update
     Add-Output "Controleer op een update van dit script."
-
-    DownloadFilesFromRepo -Owner "examencentrumtcr" -Repository "cetool" -Path "main" -DestinationPath "$PSScriptRoot\github\"
-
+    Add-Output "Huidige versie is: $programma.versie"
     Start-Sleep -s 5
     Add-Output "Er is gecontroleerd op een update."
     Start-Sleep -s 5
    
 
     # sluiten installatie scherm
-    # $ControleerupdateForm.dispose()
-
-    $url = "https://github.com/examencentrumtcr/cetool/blob/main/cetool.ps1"
-    $output = "$psscriptroot\github\cetool.ps1"
-
-    Invoke-WebRequest -Uri $url -OutFile $output
-
-    # sluiten van venster. Dit moet na het downloaden van de bestanden.
     $ControleerupdateForm.dispose()
 } # einde Controleerupdate
-
 
 # Functie om het hoofdmenu te tonen
 # Deze functie toont het hoofdmenu van de applicatie
