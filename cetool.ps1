@@ -2,7 +2,6 @@
    Deze tool is gemaakt door Benvindo Neves
 #>
 
-<#
 $programma = @(
     versie = "0.3.0"
     extralabel = "+9.250718"
