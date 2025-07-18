@@ -3,7 +3,10 @@
 versie 1.0.0.alpha.250718
 - Object @programma gedefinieerd met versie, extralabel, mode en auteur
 - Script test-logsopschonen.ps1 wordt meegenomen met deze versie.
-- Bij Github is een Public repository aangemaakt voor Cetool script. Mogelijk om deze hier te hosten?
+- Bij Github is een Public repository aangemaakt voor Cetool script. 
+  In de map latest staat de laatste versie als zipbestand.
+- Function controleerupdate werkt nu. De map met de laatste versie wordt ingelezen. De zipbestand wordt gedownload.
+  Er wordt gecontroleerd of dit de laatste versie is. Het update zelf is nog niet werkend.
 
 versie 1.0.0.test.250717
 - Script gemaakt om te testen of je in een logbestand alle logs kan verwijderen die ouder zijn dan X dagen.
