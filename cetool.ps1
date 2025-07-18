@@ -803,7 +803,6 @@ Function Controleerupdate {
     $ControleerupdateForm.dispose()
 } # einde Controleerupdate
 
-
 # Functie om het hoofdmenu te tonen
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
