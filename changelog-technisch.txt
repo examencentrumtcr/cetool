@@ -1,0 +1,255 @@
+# Changelog van script Ce-tool.
+
+versie 1.0.0.alpha.250718
+- Object @programma gedefinieerd met versie, extralabel, mode en auteur
+- Script test-logsopschonen.ps1 wordt meegenomen met deze versie.
+- Bij Github is een Public repository aangemaakt voor Cetool script. Mogelijk om deze hier te hosten?
+
+versie 1.0.0.test.250717
+- Script gemaakt om te testen of je in een logbestand alle logs kan verwijderen die ouder zijn dan X dagen.
+  Script is test-logsopschonen.ps1 en het werkt!
+- Website om te updaten is gereed: cetool.neveshuis.nl
+
+versie 0.3.0.beta.250715
+- geüpload als versie 0.3.0+9
+
+versie 0.3.0.beta.250714
+- geüpload als versie 0.3.0.beta build 8
+- 2 Problemen die VS code aangaf opgelost. Gebruikte namen voor Functions veranderen: Create-XmlFile is New-XmlFile 
+  en Zip-folder naar Compress-Folder.
+- Bij function Convert-ExcelToFacet worden nog meer regels weergegeven in textbox. Dit geeft meer info.
+- De achtergrondkleur van alle vensters, via de function declareren_standaardvenster, en de knoppen bij alle vensters veranderd.
+- Bij het omzetten van het excelbestand wordt in de log de info met een tab naar links geschoven. Alleen de start en het eind geeft
+  nu een datum en tijd in de log.
+
+versie 0.3.0.beta.250713
+- Weer te geven tekst bij het inlezen van het Excelbestand gewijzigd. Eerst bestand openen en dan inlezen.
+- Bij function Show-EcelForm wordt meer gegevens van de ingelezen Excelbestand getoond. 
+  De gegevens worden gesorteerd en netjes onder elkaar weergegeven in een textbox.
+  De 2 labels die eerst de informatie gaf zijn verwijderd.
+- Function Empty_Exceldata aangemaakt om de array leeg te maken en standaard data te geven.
+  
+versie 0.3.0.alpha.250710
+- geüpload als versie 0.3.0.alpha build 7
+- Function Standaardfont toegevoegd die de standaard font voor de applicatie definieert.
+  Toegepast bij declareren_standaardvenster.
+- Een Function een andere meer duidelijke naam gegeven: Show-SelectExcelForm
+- Van de knoppen, textboxen en labels bij alle functions is de positie en grootte veranderd.
+
+versie 0.3.0.alpha.250708
+- Bij function Show-ConvertForm wordt ook gebruikt gemaakt van standaard venster.
+  Als het omzetten wordt gestart vindt er een controle plaats of een uitvoernaam en uitvoermap is gegeven.
+  Deze mogen niet leeg zijn.
+  Na het starten blijft het scherm zichtbaar tijdens het omzetten naar Excel.
+  In een textbox wordt nu het proces van omzetten weergegeven. De titel is veranderd naar "Data wordt omgezet naar Facet".
+  Alleen de textbox is dan zichtbaar. Na het omzetten is de knop Stoppen weer zichtbaar. De tekst is veranderd naar Sluiten.
+
+versie 0.3.0.alpha.250704
+- Functien write-log aangepast om ook zonder Datum en Tijd te loggen.
+- Bij functie Convert-ExcelToFacet wordt dit gebruikt om een lege regel te schrijven in de log.
+- Regel 600 staat er voor niets: $Exceldata.geselecteert = $Geselecteerd. Verwijderd.
+(deel 2 vanaf 16:07 begint hier)
+- Function declareren_exceldata verwijderd. deze wordt niet gebruikt.
+- 2 variabelen van de functie declareren_standaardvenster hebben een andere naam die beter aansluit bij wat het doet.
+  Dus "pos_x" is nu "size_x". idem voor "pos_y".
+- Het inlezen van een Excel zie je nu in venster Show-ExcelForm
+  Een functie Add-Output is toegevoegd om tekst weer te geven in de textbox van Show-ExcelForm
+  Function Import-ExcelFile wordt nu gestart als function Show-ExcelForm is geopend. (form.add_shown)
+  Eerst zie je een venster met informatie over het inlezen. Daarna verschijnen de knoppen en tekst.
+- Bij het declareren van standaard venster is $StandaardForm.TopMost = $true. Dit was $false.
+
+versie 0.3.0.alpha.250703
+- Een testscript is gemaakt "cetool-eigen-conpsole" om een eigen console te testen maar dit werkt niet!
+  Mogelijk oplossing is in de aanroep vd snelkoppleing de -noconsole weg te halen.
+- Het logboekvenster is aangepast. Je ziet nu 2 scrollbars, alle regels op 1 lijn, de tekst niet meer in het blauw, het knopje sluiten 
+  is nu een kleine knop onderaan en de grootte van het venster met de tekst is aangepast.
+
+versie 0.3.0.alpha.250702
+- Naam icoon play.png veranderd naar start.png
+- Icoon toegevoegd bij alle standaard vensters, cetool-icoon.ico.
+- Acties bij het omzetten, functie Convert-ExcelToFacet, worden gelogd.
+
+versie 0.3.0.alpha.250630
+- Script werkt nu volledig met GUI. Nog wel enkele aanpassingen en testen te verrichtten.
+- Tekst wordt weergegeven aan het begin van de functie Import-Excel zodat je weet dat er iets gebeurt en geen leeg scherm ziet.
+- Bestandsnaam wordt nu gecreëerd na het inlezen van het Excelbestand. Nu heb je na elke omzetting een andere naam.
+- Zipbestand per brinnummer wordt gemaakt en een zipbestand van alles.
+  Deze wordt geplaatst in de gekozen uitvoermap
+  Standaard is de uitvoermap de Mijn Documenten folder.
+
+versie 0.3.0.alpha.250626
+- Test gedaan door Rob op versie 0.2.1 en alles werkt.
+- Code overgenomen van Versie 0.2.1.alpha.250618: Functions Create-xmlfile en zip-folder en wat code uit main-proces.
+- Regel aangepast bij Function Show-Mainform waar de data uit function import-excelfile niet doorgegeven werd aan $exceldata.inhoud.
+  Dit kwam omdat import-excelfile geen waarde teruggeeft (return) maar dit wel zo gecodeerd is. Regel 406, $btnstart.add_click.
+  Fout met een lege array $Exceldata.inhoud is opgelost.
+- Function Convert-ExcelToFacet maakt nu de xml bestanden aan in de betreffende groepen.
+  De output map wordt van te voren geleegd.
+  Deze functie is nog niet compleet.
+
+versie 0.3.0.alpha.250613
+- Fout met verkeerde waarde van array Exceldata is opgelost.
+  Een globale array is gemaakt en gedefinieerd in het begin
+  Hierdoor hoeft tussen de Functions de waarde van de array niet meer worden doorgegeven. 
+- Bij function Show-ConvertForm is de layout aangepast.
+
+versie 0.3.0.alpha.250612
+- Bij het inlezen van het Excelbestand blijft de cursor op 1 regel staan bij het tellen van het aantal rijen.
+- Functie toegevoegd om het omzetten te starten. Het enige info die dit nog geeft zijn de ingevoerde waarden.
+  FOUT: regels 175 en 186: de waarden van array exceldata, uitvoernaam en uitvoermap worden niet herkend.
+
+versie 0.3.0.alpha.250610
+- Na het inlezen van een Excelbestand wordt de inhoud bewaard in een array.
+  Tussen de vensters wordt deze array doorgegeven als parameter.
+- De vensters hebben een naam gekregen die meer past bij wat het doet.
+- In het venster met informatie over het Excelbestand kan je opnieuw een bestand kiezen.
+  Hiervoor is een knop toegevoegd.
+- Function Load-PNGImage verandert naar Get-PNGImage.
+- In het laatste venster is een knop toegevoegd waarmee je de uitvoermap kan wijzigen.
+
+versie 0.3.0.alpha.250609
+- Optie Start omzetten heeft een andere icoontje.
+- Na het kiezen van een Excelbestand wordt deze ingelezen.
+  Een nieuwe venster is toegevoegd waar je meer informatie krijgt over het gekozen Excelbestand.
+  Als je op Bevestigen klikt ga je naar het venster waar je nog enkele opties kan wijzigen voordat het omzetten begint.
+
+versie 0.3.0.alpha.250508
+- Script wordt bedient met een GUI.
+  Er zijn 3 opties: Start Omzetten, Logboek bekijken en afsluiten.
+  Elke optie heeft een knop met een icoontje.
+  Met de 1e optie wordt een venster geopend waarmee je een Excelbestand kan inlezen. 
+  Je kan hierna terug naar hoofdvenster of het omzetten starten.
+  Als je op omzetten klikt krijg je nu alleen een venster met info. Er gebeurt dus verder niets.
+  Met de 2e optie Logboek bekijken wordt de inhoud van de logboek getoond in een nieuw venster. 
+  Met een knop Terug ga je weer terug.
+  Met de 3e optie wordt het programma afgesloten.
+
+Versie 0.2.1.beta.250625
+- geüpload als versie 0.2.1.beta build 6
+- Enkele test gedaan door Rob.
+  Xml bestanden werden goed ingelezen. Alleen kreeg je wel 2 foutmeldingen. Zie screenshot.
+- Meldingen zijn opgelost door een regel weg te halen waar de zips werden verwijderd.
+
+Versie 0.2.1.alpha.250618
+- geüpload als versie 0.2.1.alpha build 5
+- Test gedaan door Rob en enkele xmlbestanden werden niet ingelezen en gaven een foutmelding.
+  Dit is opgelost door wat hieronder beschreven is.
+- Bij Function Creat-XMLfile zijn de elementen voorvoegsels en geslachtsnaam van plaats veranderd. Nu komt dus eerst voorvoegsels en dan geslachtsnaam.
+  Dit is nodig omdat er anders een foutmelding komt en de xml niet ingelezen wordt.
+- Aan de naam van het uitvoerbestand wordt nu ook de datum en tijd toegevoegd.
+
+Versie 0.2.0+4.250616
+- geüpload als versie 0.2.0 build 4
+
+Versie 0.2.0+4.250606
+- Bij het creëren van de xml toegevoegd 
+ - bij de variabelen afnameplanner en leider, een A of Z, afhankelijk van brinnr.
+ - achter naamexamengroep : variabele "naamexamenlokaal".
+
+Versie 0.2.0.beta.1.250605
+- geüpload als 0.2.0.beta build 3
+- Een aantal testen gedaan met Jan Porsius.
+  2 wijzigingen nog doorvoeren:
+  - Bij afnameleider en afnameplanner moet een A of Z bijkomen, Albeda of Zadkine.
+  - Achter naamexamengroep toevoegen: variabele "naamexamenlokaal".
+
+Versie 0.2.0.alpha.1.250507
+- geüpload als 0.2.0.alpha build 2
+- De veranderingen in de testscript zijn verwerkt in deze versie.
+
+Versie 0.2.0.alpha.1.250506
+- Test script gemaakt genaamd "cetool - test.ps1" en zichtbaar gemaakt in de console waar de script op elk moment is.
+- Fout bij regel 227 waar niet de juiste xml-bestandsnaam werd gelogd, opgelost.
+- Gezorgd dat bij het omzetten naar xml geen info in de console komt. " | Out-null" toegevoegd bij commando "Create-XmlFile"
+
+Versie 0.2.0.alpha.1.250429
+- Versie veranderd omdat de code totaal veranderd is.
+- Testbestand Chatgpt_7_3.ps1 wordt nu gebruikt. 
+  Deze is sneller omdat nu gelijk xml bestanden worden aangemaakt na het inlezen van de Excel bestand.
+  Bij deze versie wordt een Excel ingelezen, per brinnr een submap gemaakt, per groerps_id_import een xml, de 2 submaapen gezipt
+  en hiervan weer 1 zipbestand gemaakt . Stappen worden gelogd. De xml is nog niet volgens gewenste format bij deze versie.
+- Meer kolommen toegevoerd bij function Import-ExcelFile.
+- Aanmaken van xml aangepast. Deze voldoet aan de format.
+- Aangepaste examens krijgen een aparte xml met de toevoeging "_dos".
+
+Versie 0.1.0.alpha.1.250429
+- Als versie 0.1 geüpload. build 1.
+  Alles werkt behalve de datum van het examen en geboortedatum van student. 
+  Deze wordt niet in de format 2000-01-01 in de xml genoteerd.
+  Andere nadeel van deze versie is dat het omzetten te lang duurt. Er worden eerst Excel bestanden gegenereerd en dit kost tijd.
+
+Versie 0.0.1.alpha.1.250428
+- Test met code gegenereerd met Chatgpt in script chatgpt_7.ps1
+  Werkt nog niet. Enkele foutmeldingen bij versie _7
+  versie _7_3 werkt wel maar moet aangepast worden. xml is niet correct.
+  Chatgpt limiet had ik bereikt dus na het invoeren van een xml structuur vroeg het om abbo.
+
+Versie 0.0.1.alpha.1.250425
+- De voortgang wordt in de console getoond met per actie een regel.
+  Het e.e.a. is mooi gemaakt met gekleurde tekst.
+- Probleem : overbodige tekst wordt geschreven in console tijdens het omzetten nar XML.
+  Opgelost door bij de functie "Omzettennaarxml" toe te voegen "| Out-null". zie regel 342.
+- Fout eruit gehaald : De xml bestanden werden verwijderd waardoor je in elke map maar 1 overhield.
+  Aangepast door het volgende te verwijderen in regel 278 : remove-item "$subFolder\*" -Recurse -Force
+- Probleem : OneDrive kan ervoor zorgen dat bepaalde bestanden niet worden verwijderd en je dus foutmeldingen krijgt.
+  Opgelost door de tijdelijke submappen en bestanden in de "$env:temp" map te plaatsen.
+  Hiervoor is een variabele, $tijdelijkemap, gemaakt met deze waarde.
+  Bij de functie zipbestandmaken wordt hier ook gebruikt van gemaakt.
+- Tijdsaanduiding in naam logbestand aangepast. Seconden worden niet meer weergegeven.
+- Function Bepaalzipnaam verwijderd.
+- Naam Zipbestand wordt afgeleid van inhoud excelbestand.
+
+Versie 0.0.1.alpha.1.250424
+- Optie om uitvoermap te kiezen is verwijderd.
+- Bij het maken van zipbestand, tijdelijke map wordt leeggemaakt als het bestaat.
+- Function Bepaalzipnaam gemaakt om de naam vh zipbestand te definiëren. Wordt nog niet gebruikt.
+
+Versie 0.0.1.alpha.1.250423
+- Tekst weggehaald uit logbestand met over groepsid en datum.
+- Een function zipbestandmaken toegevoerd die van de 2 mappen, die gegenereerd zijn door de script, 1 zipbestand maakt.
+- NOG DOEN: Een aantal meldingen in de console moeten nog verwijderd worden!
+- NOG DOEN: Optie om uitvoermap te kiezen verwijderen.
+- NOG DOEN: Naam Zipbestand wordt afgeleid van inhoud excelbestand
+  
+Versie 0.0.1.alpha.1.250420
+- Eerste werkende script met XML bestanden in de 2 mappen.
+  Alleen de datumweergave in xml staat verkeerd.
+  NOG DOEN: van alles een zipbestand maken. Een test is al gedaan.
+  EN: tekst weghalen uit logbestand over groepsid en datum!
+- Hieronder toegevoegd anders blijft proces in geheugen na een foutmelding. regel 274 - na catch - log Fout bij verwerken....
+   [System.Runtime.Interopservices.Marshal]::ReleaseComObject($xl) | Out-Null
+- testscript als Function toegevoegd en gewijzigd met 2 variabelen die je moet meegeven.
+  XML WORDT GOED OMGEZET. ALLEEN 2 VARIABELEN DIE NIET JUIST OVERKOMEN!
+- "| Out-Null" toegevoegd bij regel 35 en 36 - xml aanmaken root.setattribute. Nu zie je deze tekst niet meer in console.
+- $bestandsnaam gewijzigd bij regel 116 - bewaren xmldoc aan eind van function Omzettennaarxml.
+- probleem met 1e variabele die niet goed komt, de groepsid, is opgelost door deze van de excelbestand te nemen.
+- probleem met 2e variabele opgelost. de kolom wordt aangepast en groter gemaakt met regel 34:
+  $sheet.Columns.Item("F").ColumnWidth = 20 
+  Maar beter oplossing is: Alle kolommen automatisch aanpassen . regel 36:
+  $sheet.Columns.Autofit()
+
+Versie 0.0.1.test.2.250418
+- Naam van script gewijzigd naar cetool.ps1
+- Een testscript gemaakt om alleen het omzetten naar xml te testen, genaamd test_xml_1.ps1.
+  Dit script werkt nu goed. De xml wordt aangemaakt volgens de gevraagde format, zie xml uit oudere cetool.
+  Zelfs bijzondere kandidaten worden toegevoegd.
+- Test script aangemaakt, test_met_zip.ps1, om te testen hoe de mappen tot zip kunnen worden gemaakt en daarna alles weer tot 1 zip-bestand.
+  LET OP. Chatgpt heeft de code veranderd! deze ziet er dus niet uit als de 1e versie.
+  Samenvoegen tot 1 dus de volgende keer.
+
+Versie 0.0.1.test.2.250417 
+- Naam van Logbestand is gedefinieerd met $psscriptroot
+- Fout in schrijven naar logbestand gevonden, regel 82, waar niet de juiste kolomnummer werd vermeld als een bijzonder kandidaat werd ingevoerd.
+- Excelbestanden worden omgezet naar XML en daarna verwijderd.
+  Om altijd te verwijderen, soms werd het niet verwijderd, is een wachttijd toegevoegd met 'start-sleep -ms 100' voor het verwijderen.
+
+Versie 0.0.1.test.1.250417 
+- Eerste werkende testversie met Excel bestanden in aparte mappen.
+- Je kan een bestand selecteren met een venster (GUI) en deze wordt ingelezen.
+  Vervolgens geef je, weer met een venster, aan waar je de uitvoer wil hebben.
+  Het script maakt per brinnummer, school, een map aan en hierin per afnamegroep een bestand.
+  Als het een bijzonder examen wordt afgenomen wordt hiervoor een extra bestand voor aangemaakt met als toevoeging "_bijz".
+- Alles wordt gelogd in een bestand. 
+  In logbestand wordt per regel de tijd weergegeven (was eerst datum en tijd).
+
+
