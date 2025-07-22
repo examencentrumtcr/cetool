@@ -734,14 +734,8 @@ Function Controleerupdate {
     # Vanaf hier start de controle op een update
     Add-Output "Controleer op een update van dit script."
 
-    # downloaden van een enkele bestand van github. dit werkt! je moet wel de juiste naam hebben.
-    # Dit is een voorbeeld, maar het is niet nodig om dit te doen omdat we de inhoud van de map ophalen.
-    # $url = "https://github.com/examencentrumtcr/cetool/blob/main/cetool.ps1"
-    # $output = "$psscriptroot\github\cetool.ps1"
-    # Invoke-WebRequest -Uri $url -OutFile $output
-
     $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de bestanden worden opgeslagen
-    $updateto = "0.0.0" # standaard versie
+    $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
     $huidigeversie = $programma.versie # huidige versie van het programma
 
     $url = $programma.github # dit is de url van de github repository 
@@ -772,11 +766,13 @@ Function Controleerupdate {
             $positiepunt = $versiemetzip.LastIndexOf(".")
             # updateto is alleen de versie zonder .zip. Dit is de versie die we willen vergelijken met de huidige versie.
             $updateto = $versiemetzip.Substring(0, $positiepunt) 
+            # gedownloadebestand is de naam van het bestand dat is gedownload
+            $gedownloadebestand = $localFile
         }
     }
 
     if ($updateto -eq "0.0.0") {
-        Add-Output "Er is geen update gevonden in GitHub repository."
+        Add-Output "Er is geen update gevonden in de GitHub repository: $url"
         } elseif ($huidigeversie -ge $updateto) {
         Add-Output "Het programma heeft de laatste update."
         } else {
@@ -786,12 +782,11 @@ Function Controleerupdate {
         Add-Output "Het script wordt nu bijgewerkt."    
         
         # Nu het script updaten via de function Updateuitvoeren
-        # Deze functie is nog niet gemaakt, maar wordt hieronder toegevoegd.    
-        # Updateuitvoeren $updateto
+        Updateuitvoeren $gedownloadebestand
         }
  
     # Wacht tot de gebruiker op OK klikt. Dit staat hier tijdelijk en moet later worden verwijderd.
-    Pause
+    # Pause
 
     # tijdelijkemap legen
     if (Test-Path $tijdelijkepad) {
@@ -803,6 +798,44 @@ Function Controleerupdate {
     $ControleerupdateForm.dispose()
 } # einde Controleerupdate
 
+Function Updateuitvoeren {
+    # Deze functie moet de bestanden downloaden en de inhoud van het script vervangen.
+    # Deze functie wordt aangeroepen vanuit Controleerupdate.
+    param (
+        [string]$updateto
+    )
+    
+    $startmap = "$PSScriptRoot" # dit is de map waar de bestanden worden uitgepakt
+    Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
+
+    # Nu het script opnieuw starten
+    Write-Host "Het script wordt opnieuw gestart in $startmap"
+    Add-Output "Het script wordt opnieuw gestart in $startmap"
+    # Start het nieuwe script met powerhell
+    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
+    # Start-Process -FilePath $PSScriptRoot\CE-tool-omzetten-Excel.ps1 -WorkingDirectory $PSScriptRoot -NoNewWindow
+    # Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $PSScriptRoot\latest\cetool.ps1" -WorkingDirectory $PSScriptRoot -NoNewWindow
+    # Sluit het huidige script af
+    # Stop-Process -Id $PID -Force
+    # Dit zorgt ervoor dat het huidige script wordt afgesloten en het nieuwe script wordt gestart.
+    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
+
+       # tijdelijkemap legen
+    if (Test-Path $tijdelijkepad) {
+        Remove-Item $tijdelijkepad -Recurse -Force
+    }
+    
+    Start-Sleep -Seconds 5
+
+    # sluiten van venster. Dit moet na het downloaden van de bestanden.
+    $ControleerupdateForm.dispose()
+
+    # Nu het nieuwe script starten
+    powershell -file "$PSScriptRoot\cetool.ps1"
+
+    # beëindigen van programma als updaten is uitgevoerd. Anders kan je na een update niet afsluiten.
+    exit;
+}
 # Functie om het hoofdmenu te tonen
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {

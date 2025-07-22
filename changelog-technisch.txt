@@ -1,5 +1,8 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250722
+- Het updaten werkt. Een nieuwe function updateuitvoeren is hiervoor gemaakt.
+
 versie 1.0.0.alpha.250718
 - Object @programma gedefinieerd met versie, extralabel, mode en auteur
 - Script test-logsopschonen.ps1 wordt meegenomen met deze versie.

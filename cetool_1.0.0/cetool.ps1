@@ -2,15 +2,13 @@
    Deze tool is gemaakt door Benvindo Neves
 #>
 
-<#
-$programma = @(
-    versie = "0.3.0"
-    extralabel = "+9.250718"
-    mode = "alpha" # alpha, beta, prerelease, release, update
-    auteur = "Benvindo Neves"
-    github = "examencentrumtcr/cetool"
-)
-#>
+$programma = @{
+    versie = '1.0.0'
+    extralabel = 'update.250723'
+    mode = 'alpha' # alpha, beta, prerelease, release, update
+    auteur = 'Benvindo Neves'
+    github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
+}
 
 # toevoegen .NET framework klassen
 Add-Type -AssemblyName System.Windows.Forms
@@ -736,43 +734,108 @@ Function Controleerupdate {
     # Vanaf hier start de controle op een update
     Add-Output "Controleer op een update van dit script."
 
-    # downloaden van een bestand van github. dit werkt!
-    # $url = "https://github.com/examencentrumtcr/cetool/blob/main/cetool.ps1"
-    # $output = "$psscriptroot\github\cetool.ps1"
-    # Invoke-WebRequest -Uri $url -OutFile $output
+    $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de bestanden worden opgeslagen
+    $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
+    $huidigeversie = $programma.versie # huidige versie van het programma
 
+    $url = $programma.github # dit is de url van de github repository 
     # inhoud van een map in github ophalen
-    $url = "https://api.github.com/repos/examencentrumtcr/cetool/contents/github"
     $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
-
-    # Toon inhoud
+    
+    # Loop door de items in de response en controleer of er een nieuw bestand is
     foreach ($item in $response) {
-        Write-Host "$($item.name) - $($item.type)"
+        
         if ($item.type -eq "file") {
             # Download het bestand
-            
-            #$localFile = Join-Path $PSScriptRoot "github" $item.name
-            $localFile = -join ($PSScriptRoot, '\github\',$item.name)
-            # Add-Output "Downloaden van bestand: $($item.name) naar de map $localFile"
+
+            $localFile = -join ($tijdelijkepad,$item.name)
             if (!(Test-Path $localFile)) {
                 # Maak de map aan als deze nog niet bestaat
                 New-Item -ItemType Directory -Path (Split-Path $localFile) -Force | Out-Null
             }
+
+            # "Bestand $($item.name) downloaden naar de map latest."
             Invoke-WebRequest -Uri $item.download_url -OutFile $localFile
-            # $naam = Split-Path -Path $localFile -Leaf
-            Add-Output "Bestand $($item.name) is gedownload naar $localFile."
+            
+            # bepaal laatste versie van het script
+            # bestnaam is de naam van het gedownloade bestand
+            $bestnaam = $($item.name) 
+            # versiemetzip is de versie met .zip in de naam.
+            $versiemetzip = $bestnaam.split('_')[1]
+            # de positie van de laatste punt in de versie bepalen
+            $positiepunt = $versiemetzip.LastIndexOf(".")
+            # updateto is alleen de versie zonder .zip. Dit is de versie die we willen vergelijken met de huidige versie.
+            $updateto = $versiemetzip.Substring(0, $positiepunt) 
+            # gedownloadebestand is de naam van het bestand dat is gedownload
+            $gedownloadebestand = $localFile
         }
     }
 
-    Start-Sleep -s 5
-    Add-Output "Er is gecontroleerd op een update."
-    Start-Sleep -s 5
+    if ($updateto -eq "0.0.0") {
+        Add-Output "Er is geen update gevonden in de GitHub repository: $url"
+        } elseif ($huidigeversie -ge $updateto) {
+        Add-Output "Het programma heeft de laatste update."
+        } else {
+        Add-Output "Er is een update beschikbaar voor dit script."
+    
+        Add-Output "De huidige versie is $huidigeversie en de laatste versie is $updateto."
+        Add-Output "Het script wordt nu bijgewerkt."    
+        
+        # Nu het script updaten via de function Updateuitvoeren
+        Updateuitvoeren $gedownloadebestand
+        }
+ 
+    # Wacht tot de gebruiker op OK klikt. Dit staat hier tijdelijk en moet later worden verwijderd.
+    # Pause
+
+    # tijdelijkemap legen
+    if (Test-Path $tijdelijkepad) {
+        Remove-Item $tijdelijkepad -Recurse -Force
+    }
+    
 
     # sluiten van venster. Dit moet na het downloaden van de bestanden.
     $ControleerupdateForm.dispose()
 } # einde Controleerupdate
 
+Function Updateuitvoeren {
+    # Deze functie moet de bestanden downloaden en de inhoud van het script vervangen.
+    # Deze functie wordt aangeroepen vanuit Controleerupdate.
+    param (
+        [string]$updateto
+    )
+    
+    $startmap = "$PSScriptRoot" # dit is de map waar de bestanden worden uitgepakt
+    Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
 
+    # Nu het script opnieuw starten
+    Write-Host "Het script wordt opnieuw gestart."
+    Add-Output "Het script wordt opnieuw gestart."
+    # Start het nieuwe script met powerhell
+    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
+    # Start-Process -FilePath $PSScriptRoot\CE-tool-omzetten-Excel.ps1 -WorkingDirectory $PSScriptRoot -NoNewWindow
+    # Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $PSScriptRoot\latest\cetool.ps1" -WorkingDirectory $PSScriptRoot -NoNewWindow
+    # Sluit het huidige script af
+    # Stop-Process -Id $PID -Force
+    # Dit zorgt ervoor dat het huidige script wordt afgesloten en het nieuwe script wordt gestart.
+    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
+
+       # tijdelijkemap legen
+    if (Test-Path $tijdelijkepad) {
+        Remove-Item $tijdelijkepad -Recurse -Force
+    }
+    
+    Start-Sleep -Seconds 5
+
+    # sluiten van venster. Dit moet na het downloaden van de bestanden.
+    $ControleerupdateForm.dispose()
+
+    # Nu het nieuwe script starten
+    powershell -file "$PSScriptRoot\cetool.ps1"
+
+    # beëindigen van programma als updaten is uitgevoerd. Anders kan je na een update niet afsluiten.
+    exit;
+}
 # Functie om het hoofdmenu te tonen
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
