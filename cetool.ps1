@@ -3,8 +3,8 @@
 #>
 
 $programma = @{
-    versie = '0.3.0'
-    extralabel = 'alpha.250718'
+    versie = '1.0.0'
+    extralabel = 'alpha.250722'
     mode = 'alpha' # alpha, beta, prerelease, release, update
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
