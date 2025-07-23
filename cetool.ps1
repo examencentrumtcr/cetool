@@ -4,7 +4,7 @@
 
 $programma = @{
     versie = '1.0.0'
-    extralabel = 'alpha.250722'
+    extralabel = 'alpha.250723' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease, release, update
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
@@ -91,10 +91,11 @@ function Write-Log {
     
 
     # oude inhoud inlezen, toevoegen aan tijdelijke bestand en oude bestand verwijderen
-    $inhoudlog = Get-Content -path $LogFile
-    Add-Content -Path $tijdelijkelog -Value $inhoudlog
-    Remove-Item $LogFile
-
+    if (Test-Path $LogFile) {
+        $inhoudlog = Get-Content -path $LogFile
+        Add-Content -Path $tijdelijkelog -Value $inhoudlog
+        Remove-Item $LogFile
+    } 
     # naam wijzigen naar oude bestand
     Rename-Item -Path $tijdelijkelog -NewName $LogFile
     
@@ -384,52 +385,87 @@ function Show-ExcelForm {
 function Show-ConvertForm {
     # param([array]$Exceldata)
 
-    $convertForm = declareren_standaardvenster -titel "Overzicht en opties wijzigen" -size_x 600 -size_y 300
+    $convertForm = declareren_standaardvenster -titel "Overzicht en opties wijzigen" -size_x 600 -size_y 380
 
     # geselecteerde Exceldata uit array halen
     $SelectedFile = Split-Path -Path $Exceldata.geselecteert -Leaf
+    $Selectedlocation = Split-Path -Path $Exceldata.geselecteert -Parent
     $outputname = $Exceldata.uitvoernaam
     $outputFolder = $Exceldata.uitvoermap
 
     $lblSelected = New-Object System.Windows.Forms.Label
     $lblSelected.Text = "Gekozen bestand: $SelectedFile"
-    $lblSelected.Location = '10,20'
-    $lblSelected.Size = '590,30'
+    $lblSelected.Location = '10,10'
+    $lblSelected.Size = '590,20'
     $convertForm.Controls.Add($lblSelected)
+
+    $lbllocation = New-Object System.Windows.Forms.Label
+    $lbllocation.Text = "Locatie: $Selectedlocation"
+    $lbllocation.Location = '60,30'
+    $lbllocation.Size = '540,40'
+    $convertForm.Controls.Add($lbllocation)
+
+    $standaardzoekmap = New-Object System.Windows.Forms.Checkbox 
+    $standaardzoekmap.Location = New-Object System.Drawing.Point(60, 70)
+    $standaardzoekmap.Size = New-Object System.Drawing.Size(540,30)
+    $standaardzoekmap.Text = "Deze locatie gebruiken als standaard zoekmap voor Excelbestanden."
+    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
+    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
+    $standaardzoekmap.checked = $true
+    $convertForm.Controls.Add($standaardzoekmap)
 
     $lblPath = New-Object System.Windows.Forms.Label
     $lblPath.Text = "Uitvoermap:"
-    $lblPath.Location = '10,70'
-    $lblPath.Size = '250,20'
+    $lblPath.Location = '10,110'
+    $lblPath.Size = '90,30'
     $convertForm.Controls.Add($lblPath)
 
     $OutputPath = New-Object System.Windows.Forms.Label
     $OutputPath.Text = "$outputFolder"
-    $OutputPath.Location = '10,90'
+    $OutputPath.Location = '100,110'
     $OutputPath.Size = '590,40'
     $convertForm.Controls.Add($OutputPath)
 
+    $standaarduitvoermap = New-Object System.Windows.Forms.Checkbox 
+    $standaarduitvoermap.Location = New-Object System.Drawing.Point(60, 150)
+    $standaarduitvoermap.Size = New-Object System.Drawing.Size(540,30)
+    $standaarduitvoermap.Text = "Deze uitvoermap gebruiken als standaard uitvoermap."
+    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
+    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
+    $standaarduitvoermap.checked = $true
+    $convertForm.Controls.Add($standaarduitvoermap)
+
     $lblOutput = New-Object System.Windows.Forms.Label
     $lblOutput.Text = "Uitvoernaam:"
-    $lblOutput.Location = '10,130'
+    $lblOutput.Location = '10,190'
     $lblOutput.Size = '100,20'
     $convertForm.Controls.Add($lblOutput)
 
     $txtOutput = New-Object System.Windows.Forms.TextBox
-    $txtOutput.Location = '10,150'
+    $txtOutput.Location = '120,190'
     $txtOutput.Size = '300,20'
     $txtOutput.Text = $outputname
     $convertForm.Controls.Add($txtOutput)
 
+    $standaarduitvoernaam = New-Object System.Windows.Forms.Checkbox 
+    $standaarduitvoernaam.Location = New-Object System.Drawing.Point(60, 210)
+    $standaarduitvoernaam.Size = New-Object System.Drawing.Size(540,50)
+    $standaarduitvoernaam.Text = "Deze uitvoernaam gebruiken als standaard naam voor het omgezette bestand."
+    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
+    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
+    $standaarduitvoernaam.checked = $true
+    $convertForm.Controls.Add($standaarduitvoernaam)
+
     $btnSelect = New-Object System.Windows.Forms.Button
     $btnSelect.Text = "Wijzig uitvoermap"
-    $btnSelect.Location = '380,60'
+    $btnSelect.Location = '380,300'
     $btnSelect.Size = '200,30'
     $btnSelect.BackColor = "White"
     $btnSelect.Add_Click({
         # Outputmap selecteren
         $FolderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         $FolderBrowser.Description = "Selecteer de uitvoermap"
+        # $FolderBrowser.RootFolder = [System.Environment+SpecialFolder]::MyDocuments
 
         if ($FolderBrowser.ShowDialog() -eq "OK") {
                 $outputFolder = $FolderBrowser.SelectedPath
@@ -441,7 +477,7 @@ function Show-ConvertForm {
 
     $btnBack = New-Object System.Windows.Forms.Button
     $btnBack.Text = "Stoppen"
-    $btnBack.Location = '10,190'
+    $btnBack.Location = '10,300'
     $btnBack.Size = '150,30'
     $btnBack.BackColor = "White"
     $btnBack.DialogResult = [System.Windows.Forms.DialogResult]::cancel
@@ -449,7 +485,7 @@ function Show-ConvertForm {
 
     $btnNext = New-Object System.Windows.Forms.Button
     $btnNext.Text = "Omzetten"
-    $btnNext.Location = '180,190'
+    $btnNext.Location = '180,300'
     $btnNext.Size = '150,30'
     $btnNext.BackColor = "White"
     # $btnNext.DialogResult = [System.Windows.Forms.DialogResult]::ok
@@ -711,12 +747,12 @@ function Compress-Folder {
     [System.IO.Compression.ZipFile]::CreateFromDirectory($FolderPath, $ZipFilePath)
 }
 
-Function Controleerupdate {
+Function Search-Update {
     # Controleer of er een update is voor dit script
     Write-Host "Controleer op updates."
 
        # Declareren venster met standaard waarden
-    $ControleerupdateForm = declareren_standaardvenster -titel "Controleren op een update." -size_x 600 -size_y 300
+    $SearchUpdateForm = declareren_standaardvenster -titel "Controleren op een update." -size_x 600 -size_y 300
 
     # TextBox voor statusoutput
     $outputBox = New-Object System.Windows.Forms.TextBox
@@ -725,9 +761,9 @@ Function Controleerupdate {
     $outputBox.Size = New-Object System.Drawing.Size(560, 200)
     $outputBox.Location = New-Object System.Drawing.Point(10, 5)
     $outputBox.ReadOnly = $true
-    $ControleerupdateForm.Controls.Add($outputBox)
+    $SearchUpdateForm.Controls.Add($outputBox)
 
-    $ControleerupdateForm.Show()
+    $SearchUpdateForm.Show()
     # nodig om proces de tijd te geven om de tekst te laten zien.
     Start-Sleep -Milliseconds 500  
 
@@ -781,8 +817,8 @@ Function Controleerupdate {
         Add-Output "De huidige versie is $huidigeversie en de laatste versie is $updateto."
         Add-Output "Het script wordt nu bijgewerkt."    
         
-        # Nu het script updaten via de function Updateuitvoeren
-        Updateuitvoeren $gedownloadebestand
+        # Nu het script updaten via de function Update-Script
+        Update-Script $gedownloadebestand
         }
  
     # Wacht tot de gebruiker op OK klikt. Dit staat hier tijdelijk en moet later worden verwijderd.
@@ -795,12 +831,12 @@ Function Controleerupdate {
     
 
     # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $ControleerupdateForm.dispose()
-} # einde Controleerupdate
+    $SearchUpdateForm.dispose()
+} # einde Search-Update
 
-Function Updateuitvoeren {
+Function Update-Script {
     # Deze functie moet de bestanden downloaden en de inhoud van het script vervangen.
-    # Deze functie wordt aangeroepen vanuit Controleerupdate.
+    # Deze functie wordt aangeroepen vanuit Search-Update.
     param (
         [string]$updateto
     )
@@ -811,16 +847,8 @@ Function Updateuitvoeren {
     # Nu het script opnieuw starten
     Write-Host "Het script wordt opnieuw gestart in $startmap"
     Add-Output "Het script wordt opnieuw gestart in $startmap"
-    # Start het nieuwe script met powerhell
-    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
-    # Start-Process -FilePath $PSScriptRoot\CE-tool-omzetten-Excel.ps1 -WorkingDirectory $PSScriptRoot -NoNewWindow
-    # Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $PSScriptRoot\latest\cetool.ps1" -WorkingDirectory $PSScriptRoot -NoNewWindow
-    # Sluit het huidige script af
-    # Stop-Process -Id $PID -Force
-    # Dit zorgt ervoor dat het huidige script wordt afgesloten en het nieuwe script wordt gestart.
-    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
-
-       # tijdelijkemap legen
+ 
+    # tijdelijkemap legen
     if (Test-Path $tijdelijkepad) {
         Remove-Item $tijdelijkepad -Recurse -Force
     }
@@ -828,15 +856,16 @@ Function Updateuitvoeren {
     Start-Sleep -Seconds 5
 
     # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $ControleerupdateForm.dispose()
+    $SearchUpdateForm.dispose()
 
     # Nu het nieuwe script starten
     powershell -file "$PSScriptRoot\cetool.ps1"
 
     # beëindigen van programma als updaten is uitgevoerd. Anders kan je na een update niet afsluiten.
     exit;
-}
-# Functie om het hoofdmenu te tonen
+} # einde Update-Script
+
+
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
     $mainForm = declareren_standaardvenster -titel "CE-tool omzetten Excel" -size_x 400 -size_y 300
@@ -903,6 +932,6 @@ function Show-MainForm {
 
 ############ start script ###############
 
-Controleerupdate;
+Search-Update;
 
 Show-MainForm;

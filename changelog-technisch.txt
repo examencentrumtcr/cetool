@@ -1,5 +1,12 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250723
+- Bij function write-log wordt gecontroleerd of het oude logbestand bestaat voordat je de nieuwe gaat toevoegen.
+  Anders geeft het een foutmelding als het bestand niet bestaat.
+- 2 functions naam gewijzigd: Search-Update en Update-Script.
+- Bij Function Show-ConverForm zijn 3 checkboxen toegevoegd om de ingestelde waarden als standaard te maken.
+  De posities zijn veranderd om het e.e.a. overzichtelijker te maken.
+
 versie 1.0.0.alpha.250722
 - Het updaten werkt. Een nieuwe function updateuitvoeren is hiervoor gemaakt.
 
