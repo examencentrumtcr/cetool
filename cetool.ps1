@@ -18,6 +18,9 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 # Bestand waarin alle uitgevoerde stappen worden bijgehouden.
 $LogFile = "$PSScriptRoot\script_log.txt"
 
+# Bepalen van de persoonlijke initialisatiebestand.
+$gebruikersbestand = "$PSScriptRoot\gebruikersinstellingen.json"
+
 # De ingelezen data uit het excelbestand
 $Exceldata = [PSCustomObject]@{
         aantal = 0
@@ -31,6 +34,24 @@ $Exceldata = [PSCustomObject]@{
         vakcodes = ""
     }
 
+# gebruikersinstellingen worden opgeslagen in een hash tabel
+# en kunnen worden aangepast door de gebruiker.
+# Deze worden opgeslagen in een json bestand.
+# De standaard instellingen worden in de functie gebruikersinstellingen gedeclareerd.
+$gebruiker = @{}
+
+function gebruikersinstellingen {
+# hier worden de standaardinstellingen gedeclareerd die gebruikers kunnen wijzigen
+
+$Std_inst=@{
+    startmap  = "C:\Users\0101925\Downloads"
+    uitvoermap = ""
+    uitvoernaam = ""
+    aantaldagenlogs = 30 # aantal dagen dat de gebeurtenissen in het logboeken worden bewaard
+}
+
+return $Std_inst
+}
 Function Empty_Exceldata {
 # Leeg maken van array en standaard waarden geven
 $Exceldata.aantal = 0
@@ -110,12 +131,75 @@ function Get-PNGImage {
     }
 } # einde Get-PNGImage
 
+Function ReadSettings {
+
+# standaard instellingen bepalen voor object $init
+$init = gebruikersinstellingen
+
+# inlezen initialisatiebestand als deze bestaat en toevoegen of verwijderen waarden van $init
+# dit is nodig zodat, als de initialisatiebestand wordt ingelezen, eventuele nieuwe variabelen worden behouden en verwijderde variabelen niet worden toegevoegd. 
+if (test-path -path $gebruikersbestand -pathtype leaf) { 
+    # inlezen van object als hashwaarden. hier staan de gewijzigde waarden in die je wil behouden.
+    $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
+
+    # waarden overzetten naar $init. nieuwe waarden worden behouden. verwijderde waarden worden niet toegevoegd.
+    foreach( $property in $myobject.psobject.properties.name ) {
+ 
+        # alleen toevoegen als deze bij 'init' al bestaat
+        if ( $init.$property -ne $null) { 
+            $init[$property] = $myObject.$property
+            }
+
+        } # einde foreach $property - loop    
+
+    # gekozen is om dit altijd te bewaren zodat je lijst met variabelen up to date is.
+    # $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+    } 
+
+    return $init
+
+}
+
+function SaveSettings {
+    param(
+        [Parameter(Mandatory = $true)] [hashtable]$init
+    )
+
+    <# Onderstaand is door ChatGpt gegenereerd. Nog niet getest.
+    
+    inlezen van het huidige gebruikersinstellingen bestand
+    if (test-path -path $gebruikersbestand -pathtype leaf) { 
+        $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
+    } else {
+        $myObject = @{}
+    }
+
+    # waarden overzetten naar $myObject. nieuwe waarden worden toegevoegd. verwijderde waarden worden niet toegevoegd.
+    foreach( $property in $init.psobject.properties.name ) {
+        foreach( $subproperty in $init.$property.psobject.properties.name )
+        {
+            $myObject[$property][$subproperty] = $init.$property.$subproperty 
+        } # einde foreach $subproperty - loop 
+    } # einde foreach $property - loop    
+    #>
+
+    # schrijven naar bestand
+    # $myObject | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+
+    $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+
+} # einde SaveSettings
 function SelectExcelForm {
     # Deze functie toont een dialoogvenster om een Excelbestand te selecteren
     # en retourneert het pad naar het geselecteerde bestand of 'GEEN' als er geen bestand is geselecteerd.
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = "Excel bestanden (*.xlsx)|*.xlsx"
     $dialog.Title = "Kies een Excelbestand"
+    if ($gebruiker.startmap -ne "") {
+        $dialog.InitialDirectory = $gebruiker.startmap # standaard map is de map waar het script staat
+    } else {
+        $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments') # standaard naar Mijn Documenten
+    }
 
     if ($dialog.ShowDialog() -eq "OK") {
         $selectedFile = $dialog.FileName
@@ -450,7 +534,7 @@ function Show-ConvertForm {
     $standaarduitvoernaam = New-Object System.Windows.Forms.Checkbox 
     $standaarduitvoernaam.Location = New-Object System.Drawing.Point(60, 210)
     $standaarduitvoernaam.Size = New-Object System.Drawing.Size(540,50)
-    $standaarduitvoernaam.Text = "Deze uitvoernaam gebruiken als standaard naam voor het omgezette bestand."
+    $standaarduitvoernaam.Text = "Deze format gebruiken als standaard naam voor het omgezette bestand."
     # $wissennabackup.Font = 'Microsoft Sans Serif,11'
     # $wissennabackup.ForeColor = [System.Drawing.Color]::green
     $standaarduitvoernaam.checked = $true
@@ -932,6 +1016,31 @@ function Show-MainForm {
 
 ############ start script ###############
 
-Search-Update;
+# tijdelijk uitgeschakeld
+# Search-Update;
+
+# Lees de instellingen van de gebruiker in
+# Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
+$gebruiker = ReadSettings
 
 Show-MainForm;
+
+<# 
+#dit is een test
+
+$gebr1 = gebruikersinstellingen
+
+# SaveSettings $gebr
+
+$gebr1
+
+$gebr2 = ReadSettings
+
+"========= new================"
+
+$gebr2
+
+SaveSettings $gebr1
+pause
+
+ #>
