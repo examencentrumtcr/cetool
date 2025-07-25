@@ -1,8 +1,13 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250725
+- Function StandardInOutputDirectory aangemaakt om de standaard zoekmap voor Excel en uitvoermap te bepalen.
+- Function StandardOutputFileName aangemaakt om de standaard uitvoernaam voor Excel te bepalen.
+
 versie 1.0.0.alpha.250724
 - Start gemaakt met gebruikersinstellingen bewaren en gebruiken.
   3 nieuwe functions: gebruikersinstellingen, Readsettings en Savesettings.
+  Het object $gebruikers=@{} is aangemaakt en bevat de instellingen die de gebruiker kan wijzigen.
   Bij de start wordt het gebruikersbestand ingelezen als deze bestaat
   Bij function SelectExcelForm wordt gestart met de ingestelde startmap, als deze niet leeg is.
 

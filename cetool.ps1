@@ -4,7 +4,7 @@
 
 $programma = @{
     versie = '1.0.0'
-    extralabel = 'alpha.250724' # extra label voor de alpha versie
+    extralabel = 'alpha.250725' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease, release, update
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
@@ -18,7 +18,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 # Bestand waarin alle uitgevoerde stappen worden bijgehouden.
 $LogFile = "$PSScriptRoot\script_log.txt"
 
-# Bepalen van de persoonlijke initialisatiebestand.
+# Bepalen van het bestand met gebruikersinstellingen.
 $gebruikersbestand = "$PSScriptRoot\gebruikersinstellingen.json"
 
 # De ingelezen data uit het excelbestand
@@ -42,28 +42,49 @@ $gebruiker = @{}
 
 function gebruikersinstellingen {
 # hier worden de standaardinstellingen gedeclareerd die gebruikers kunnen wijzigen
-
 $Std_inst=@{
-    startmap  = "C:\Users\0101925\Downloads"
-    uitvoermap = ""
-    uitvoernaam = ""
+    startmap  = ""       # standaard map waar de gebruiker het script start
+    uitvoermap = ""      # standaard map waar de gebruiker de uitvoer plaatst
+    uitvoernaam = ""     # standaard naam voor de uitvoer
     aantaldagenlogs = 30 # aantal dagen dat de gebeurtenissen in het logboeken worden bewaard
+    }
+return $Std_inst
+} # einde gebruikersinstellingen
+
+Function StandardInOutputDirectory {
+# Standaard in- en uitvoer voor de applicatie
+[string]$std_inoutput = [Environment]::GetFolderPath("MyDocuments")
+return $std_inoutput
 }
 
-return $Std_inst
+Function StandardOutputFileName {
+# Standaard uitvoernaam voor de e
+[string]$std_inoutput = "Facetbestand_" + (Get-Date -Format "yyyyMMdd_HHmmss")
+return $std_inoutput
 }
+
 Function Empty_Exceldata {
 # Leeg maken van array en standaard waarden geven
 $Exceldata.aantal = 0
 $Exceldata.inhoud = @()
 $Exceldata.geselecteert = ""
-$Exceldata.uitvoermap = [Environment]::GetFolderPath('MyDocuments')
-$Exceldata.uitvoernaam = "Facetbestand_" + (Get-Date -Format "yyyyMMdd_HHmmss") # standaard uitvoernaam
+# $Exceldata.uitvoermap = StandardInOutputDirectory
+# $Exceldata.uitvoernaam = "Facetbestand_" + (Get-Date -Format "yyyyMMdd_HHmmss") # standaard uitvoernaam
+if ($gebruiker.uitvoermap -eq "") {
+    $Exceldata.uitvoermap = StandardInOutputDirectory # standaard uitvoermap
+} else {
+    $Exceldata.uitvoermap = $gebruiker.uitvoermap
+}
+if ($gebruiker.uitvoernaam -eq "") {
+    $Exceldata.uitvoernaam = StandardOutputFileName # standaard uitvoernaam
+} else {
+    $Exceldata.uitvoernaam = $gebruiker.uitvoernaam
+}
 $Exceldata.brinnummers = ""
 $Exceldata.groepsidnrs = ""
 $Exceldata.examendagen = ""
 $Exceldata.vakcodes = ""
-}
+} # einde Empty_Exceldata
 
 Function declareren_standaardvenster {
 param (
@@ -158,7 +179,7 @@ if (test-path -path $gebruikersbestand -pathtype leaf) {
 
     return $init
 
-}
+} # einde ReadSettings
 
 function SaveSettings {
     param(
@@ -195,10 +216,10 @@ function SelectExcelForm {
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = "Excel bestanden (*.xlsx)|*.xlsx"
     $dialog.Title = "Kies een Excelbestand"
-    if ($gebruiker.startmap -ne "") {
-        $dialog.InitialDirectory = $gebruiker.startmap # standaard map is de map waar het script staat
+    if ($gebruiker.startmap -eq "") {
+        $dialog.InitialDirectory = StandardInOutputDirectory # standaard zoekmap voor Excelbestanden
     } else {
-        $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments') # standaard naar Mijn Documenten
+        $dialog.InitialDirectory = $gebruiker.startmap # standaard map is de map waar het script staat
     }
 
     if ($dialog.ShowDialog() -eq "OK") {
@@ -358,7 +379,7 @@ function Import-ExcelFile {
     $Exceldata.geselecteert = $ExcelPath
     $Exceldata.inhoud = $data
     $Exceldata.aantal = $rowmax - 1 # aantal rijen minus de header
-    # De gevonden brinnummers in de array zetten
+    # De gevonden data in de array zetten
     # Met Sort-object -Property Values wordt alles op alfabetisch volgorde gezet
     # met `r`n`t de regels onder elkaar en een tab naar rechts
     $brinnrs = $data | Group-Object -Property MapNaam | Sort-object -Property Values
