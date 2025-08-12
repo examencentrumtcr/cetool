@@ -3,7 +3,7 @@
 #>
 
 $programma = @{
-    versie = '1.0.0' # versie van het programma
+    versie = '0.0.5'
     extralabel = 'alpha.250812' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
@@ -842,7 +842,7 @@ function New-XmlFile {
     $root.AppendChild($afnamegroep) | Out-Null
 
     $xmlDoc.Save($OutputPath)
-} # einde New-XmlFile
+}
 
 function Compress-Folder {
     # Hier wordt een zipbestand gemaakt adhv de 2 gegeven bestanden
@@ -857,15 +857,6 @@ function Compress-Folder {
 
 Function Search-Update {
     # Controleer of er een update is voor dit script
-
-    $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
-    # Als de tijdelijke map bestaat wordt deze geleegd en het update niet uitgevoerd.
-    if (Test-Path $tijdelijkepad) {
-        write-host "Er is al een update uitgevoerd. De tijdelijke map wordt geleegd." # Dit is er ter controle.
-        Remove-Item $tijdelijkepad -Recurse -Force
-        return
-    }
-
     Write-Host "Controleren op een update."
 
     # Declareren venster met standaard waarden
@@ -887,7 +878,18 @@ Function Search-Update {
     # Vanaf hier start de controle op een update
     Add-Output "Controleer op een update van dit script."
 
-    
+    $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
+    # Als de tijdelijke map bestaat wordt deze geleegd en het update niet uitgevoerd.
+    if (Test-Path $tijdelijkepad) {
+        write-host "Er is al een update uitgevoerd."
+        Add-Output "Er is al een update uitgevoerd."
+        # Even wachten tot de gebruiker de tekst heeft gelezen.
+        Start-Sleep -Seconds 5
+        Remove-Item $tijdelijkepad -Recurse -Force
+        # sluiten van venster.
+        $SearchUpdateForm.dispose()
+        return
+    }
 
     $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
     $huidigeversie = $programma.versie # huidige versie van het programma
@@ -935,8 +937,7 @@ Function Search-Update {
         Add-Output "De huidige versie is $huidigeversie en de laatste versie is $updateto."
         Add-Output "Het script wordt nu bijgewerkt."    
         
-        # Nu het script updaten via de function Update-Script en dit loggen.
-        Write-Log -Message "Het script heeft een update gekregen naar versie $updateto."
+        # Nu het script updaten via de function Update-Script
         Update-Script $gedownloadebestand
         }
  
@@ -957,12 +958,12 @@ Function Update-Script {
     )
     
     $startmap = "$PSScriptRoot" # dit is de map waar de bestanden worden uitgepakt
-    Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
+    # Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
 
     # Nu het script opnieuw starten
     Write-Host "Het script wordt opnieuw gestart in $startmap"
     Add-Output "Het script wordt opnieuw gestart in $startmap"
-    
+ 
     # Let op dat de tijdelijke map niet meer wordt geleegd. Zie functie Search-Update.
 
     # Even wachten tot de bestanden zijn uitgepakt en de gebruker de tijd heeft om de tekst te lezen.    
@@ -1046,7 +1047,7 @@ function Show-MainForm {
 ############ start script ###############
 
 # tijdelijk uitgeschakeld
-# Search-Update;
+Search-Update;
 
 # Lees de instellingen van de gebruiker in
 # Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object

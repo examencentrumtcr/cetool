@@ -1,5 +1,12 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250812
+- Bij het updaten wordt de tijdelijke map niet meer geleegd na een update. Bij de start vh updateproces wordt nu gecontroleerd of deze map
+  bestaat en zo ja het updateproces niet uitgevoerd.
+- Bij functie Show-ConvertForm een aantal teksten die niet onzichtbaar werden voor het omzetten, onzichtbaar gemaakt.
+  En de tekstbox wat groter gemaakt.
+- Updaten wordt ook gelogd in logboek!
+
 versie 1.0.0.alpha.250725
 - Function StandardInOutputDirectory aangemaakt om de standaard zoekmap voor Excel en uitvoermap te bepalen.
 - Function StandardOutputFileName aangemaakt om de standaard uitvoernaam voor Excel te bepalen.
