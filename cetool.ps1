@@ -659,7 +659,7 @@ function Show-ConvertForm {
         SaveSettings $gebruiker
     
         # Starten omzetten
-        # Convert-ExcelToFacet
+        Convert-ExcelToFacet
         # in de titel aangeven dat de data is omgezet
         $convertForm.Text = "KLAAR! Data is omgezet naar Facet formaat."
         # de knop om te sluiten is weer klikbaar en tekst is veranderd
@@ -1025,8 +1025,10 @@ function Show-MainForm {
     $btnStart.BackColor = "White"
     $btnStart.Add_Click({
         $mainForm.Hide() # Zorg dat hoofdmenu sluit
-        # $Geselecteerd = SelectExcelForm
-        $Geselecteerd = "C:\Users\0101925\Desktop\temp\test.xlsx"
+        $Geselecteerd = SelectExcelForm
+        # Volgende regel kan als test gebruikt worden om een Excelbestand te forceren.
+        # Dit is handig als je het script wilt testen zonder een Excelbestand te selecteren.
+        # $Geselecteerd = "C:\Users\0101925\Desktop\temp\test.xlsx"
         if ($Geselecteerd -ne 'GEEN') {
             # Import-ExcelFile -ExcelPath $Geselecteerd
             # Exceldata laten zien
