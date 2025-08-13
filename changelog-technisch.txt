@@ -1,5 +1,12 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250813
+- Een lege regel toegevoegd in het logboek voor het uitvoeren van een update.
+- Bij function Show-convertForm 3 vinkjes toegevoegd om de ingevoerde startmap, uitvoermap en uitvoernaam als standaard in te stellen.
+  De vinkjes om als standaard te bewaren, worden gecheckt als de corresponderende waarde bij de gebruikersinstellingen leeg is. 
+  Op deze manier worden de 1e geselecteerde waarden als standaard ingesteld.
+  De instellingen worden opgeslagen voor het uitvoeren.
+
 versie 1.0.0.alpha.250812
 - Bij het updaten wordt de tijdelijke map niet meer geleegd na een update. Bij de start vh updateproces wordt nu gecontroleerd of deze map
   bestaat en zo ja het updateproces niet uitgevoerd.

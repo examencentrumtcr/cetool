@@ -4,7 +4,7 @@
 
 $programma = @{
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250812' # extra label voor de alpha versie
+    extralabel = 'alpha.250813' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
@@ -513,9 +513,12 @@ function Show-ConvertForm {
     $standaardzoekmap.Location = New-Object System.Drawing.Point(60, 70)
     $standaardzoekmap.Size = New-Object System.Drawing.Size(540,30)
     $standaardzoekmap.Text = "Deze locatie gebruiken als standaard zoekmap voor Excelbestanden."
-    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
-    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
-    $standaardzoekmap.checked = $true
+    if ($gebruiker.startmap -eq "") {
+        $standaardzoekmap.Checked = $true
+    } else {
+        $standaardzoekmap.Checked = $false
+    }
+    # $standaardzoekmap.checked = $true
     $convertForm.Controls.Add($standaardzoekmap)
 
     $lblPath = New-Object System.Windows.Forms.Label
@@ -536,7 +539,12 @@ function Show-ConvertForm {
     $standaarduitvoermap.Text = "Deze uitvoermap gebruiken als standaard uitvoermap."
     # $wissennabackup.Font = 'Microsoft Sans Serif,11'
     # $wissennabackup.ForeColor = [System.Drawing.Color]::green
-    $standaarduitvoermap.checked = $true
+    if ($gebruiker.uitvoermap -eq "") {
+        $standaarduitvoermap.Checked = $true
+    } else {
+        $standaarduitvoermap.Checked = $false
+    }
+    # $standaarduitvoermap.checked = $true
     $convertForm.Controls.Add($standaarduitvoermap)
 
     $lblOutput = New-Object System.Windows.Forms.Label
@@ -557,7 +565,12 @@ function Show-ConvertForm {
     $standaarduitvoernaam.Text = "Deze format gebruiken als standaard naam voor het omgezette bestand."
     # $wissennabackup.Font = 'Microsoft Sans Serif,11'
     # $wissennabackup.ForeColor = [System.Drawing.Color]::green
-    $standaarduitvoernaam.checked = $true
+    if ($gebruiker.uitvoernaam -eq "") {
+        $standaarduitvoernaam.Checked = $true
+    } else {
+        $standaarduitvoernaam.Checked = $false
+    }
+    # $standaarduitvoernaam.checked = $true
     $convertForm.Controls.Add($standaarduitvoernaam)
 
     $btnSelect = New-Object System.Windows.Forms.Button
@@ -630,8 +643,23 @@ function Show-ConvertForm {
         # tijd geven om dit uit te voeren
         Start-Sleep -Milliseconds 100
 
+        # als de gebruiker heeft gekozen om de standaard zoekmap te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaardzoekmap.Checked) {
+            $gebruiker.startmap = $Selectedlocation
+        }
+        # als de gebruiker heeft gekozen om de standaard uitvoermap te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaarduitvoermap.Checked) {
+            $gebruiker.uitvoermap = $OutputPath.Text
+        }
+        # als de gebruiker heeft gekozen om de standaard uitvoernaam te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaarduitvoernaam.Checked) {
+            $gebruiker.uitvoernaam = $txtOutput.Text
+        }
+        # de instellingen opslaan in het gebruikersbestand
+        SaveSettings $gebruiker
+    
         # Starten omzetten
-        Convert-ExcelToFacet
+        # Convert-ExcelToFacet
         # in de titel aangeven dat de data is omgezet
         $convertForm.Text = "KLAAR! Data is omgezet naar Facet formaat."
         # de knop om te sluiten is weer klikbaar en tekst is veranderd
@@ -887,8 +915,6 @@ Function Search-Update {
     # Vanaf hier start de controle op een update
     Add-Output "Controleer op een update van dit script."
 
-    
-
     $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
     $huidigeversie = $programma.versie # huidige versie van het programma
 
@@ -936,6 +962,7 @@ Function Search-Update {
         Add-Output "Het script wordt nu bijgewerkt."    
         
         # Nu het script updaten via de function Update-Script en dit loggen.
+        Write-Log -Message " " -Notimestamp
         Write-Log -Message "Het script heeft een update gekregen naar versie $updateto."
         Update-Script $gedownloadebestand
         }
@@ -998,7 +1025,8 @@ function Show-MainForm {
     $btnStart.BackColor = "White"
     $btnStart.Add_Click({
         $mainForm.Hide() # Zorg dat hoofdmenu sluit
-        $Geselecteerd = SelectExcelForm
+        # $Geselecteerd = SelectExcelForm
+        $Geselecteerd = "C:\Users\0101925\Desktop\temp\test.xlsx"
         if ($Geselecteerd -ne 'GEEN') {
             # Import-ExcelFile -ExcelPath $Geselecteerd
             # Exceldata laten zien
@@ -1051,6 +1079,8 @@ function Show-MainForm {
 # Lees de instellingen van de gebruiker in
 # Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
 $gebruiker = ReadSettings
+
+# SaveSettings $gebruiker
 
 Show-MainForm;
 
