@@ -1,5 +1,13 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250814
+- In de console wordt nu informatie weergegeven voor de gebruiker. O.a de naam van het programma.
+- Functions Search-Update en Update-Script zijn aangepast om info in de console weer te geven.
+  In het logboek worden de gebeurtenissen gelogd. Ook als het update via Github niet goed gaat.
+  Bij Search-Update en Update-Script wordt de try catch methode toegepast.
+  Een extra controle of de naam van het item begint met "cetool_" en eindigt op ".zip" en
+  een extra controle of een versie in de naam zit toegevoegd bij Search-Update.
+
 versie 1.0.0.alpha.250813
 - Een lege regel toegevoegd in het logboek voor het uitvoeren van een update.
 - Bij function Show-convertForm 3 vinkjes toegevoegd om de ingevoerde startmap, uitvoermap en uitvoernaam als standaard in te stellen.

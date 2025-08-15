@@ -1,3 +1,16 @@
+2025-08-15 22:52:16	Klaar!
+	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\test [2212].zip
+	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
+	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767599.xml
+	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT
+	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599_dos.xml
+	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599.xml
+2025-08-15 22:52:16	Omzetten van Excel data naar Facet formaat is gestart.
+    	Gekozen bestand: C:\Users\0101925\Desktop\temp\test.xlsx
+    	Aantal ingelezen rijen: 9
+    	Uitvoermap: C:\Users\0101925\Desktop\temp
+    	Uitvoernaam: test [2212]
+ 
 2025-08-13 23:29:56	Klaar!
 	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\test naam ingevoerd.zip
 	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP

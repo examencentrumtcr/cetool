@@ -1,14 +1,22 @@
 <# Centraal Examen tool om een excelbestand van Eduarte om te zetten naar een voor Facet geschikt format.
-   Deze tool is gemaakt door Benvindo Neves
+   Deze tool is gemaakt door Benvindo Neves.
+   Alle rechten voorbehouden.
 #>
 
 $programma = @{
+    naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250813' # extra label voor de alpha versie
+    extralabel = 'alpha.250815' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
 }
+
+write-host ""
+write-host "** Programma "$programma.naam -f Green
+write-host "** Versie is "$programma.versie -f Green
+write-host ""
+write-host "Initialiseren van het programma."
 
 # toevoegen .NET framework klassen
 Add-Type -AssemblyName System.Windows.Forms
@@ -889,45 +897,41 @@ Function Search-Update {
     $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
     # Als de tijdelijke map bestaat wordt deze geleegd en het update niet uitgevoerd.
     if (Test-Path $tijdelijkepad) {
-        write-host "Er is al een update uitgevoerd. De tijdelijke map wordt geleegd." # Dit is er ter controle.
+        write-host "Er is net een update uitgevoerd. De tijdelijke map wordt geleegd."
         Remove-Item $tijdelijkepad -Recurse -Force
         return
     }
 
     Write-Host "Controleren op een update."
 
-    # Declareren venster met standaard waarden
-    $SearchUpdateForm = declareren_standaardvenster -titel "Controleren op een update." -size_x 600 -size_y 300
-
-    # TextBox voor statusoutput
-    $outputBox = New-Object System.Windows.Forms.TextBox
-    $outputBox.Multiline = $true
-    $outputBox.ScrollBars = "Vertical"
-    $outputBox.Size = New-Object System.Drawing.Size(560, 200)
-    $outputBox.Location = New-Object System.Drawing.Point(10, 5)
-    $outputBox.ReadOnly = $true
-    $SearchUpdateForm.Controls.Add($outputBox)
-
-    $SearchUpdateForm.Show()
-    # nodig om proces de tijd te geven om de tekst te laten zien.
-    Start-Sleep -Milliseconds 500  
-
-    # Vanaf hier start de controle op een update
-    Add-Output "Controleer op een update van dit script."
-
-    $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
+    $updateto = "0.0.0" # standaard waarde. Als er geen update is gevonden, dan blijft deze waarde 0.0.0. Let op, dit betekent dat er een probleem is met de update.
     $huidigeversie = $programma.versie # huidige versie van het programma
 
     $url = $programma.github # dit is de url van de github repository 
     # inhoud van een map in github ophalen
-    $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
-    
+    try {
+        $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
+    } catch {
+        Write-Host "Fout bij het ophalen van de inhoud van de GitHub repository: $url" -f Red
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het ophalen van de inhoud van de GitHub repository: $url"
+        return
+    }
+       
     # Loop door de items in de response en controleer of er een nieuw bestand is
     foreach ($item in $response) {
         
         if ($item.type -eq "file") {
             # Download het bestand
 
+            # controleer of de naam van het item begint met "cetool_" en eindigt op ".zip"
+            if (!($item.name -like "cetool_*.zip")) {
+                continue # als de naam niet voldoet, dan overslaan
+            }   
+            # controleer of een versie in de naam zit
+            if (!($item.name -match "_\d+\.\d+\.\d+\.zip$")) {
+                continue # als de naam niet voldoet, dan overslaan
+            }
             $localFile = -join ($tijdelijkepad,$item.name)
             if (!(Test-Path $localFile)) {
                 # Maak de map aan als deze nog niet bestaat
@@ -952,18 +956,18 @@ Function Search-Update {
     }
 
     if ($updateto -eq "0.0.0") {
-        Add-Output "Er is geen update gevonden in de GitHub repository: $url"
-        } elseif ($huidigeversie -ge $updateto) {
-        Add-Output "Het programma heeft de laatste update."
-        } else {
-        Add-Output "Er is een update beschikbaar voor dit script."
-    
-        Add-Output "De huidige versie is $huidigeversie en de laatste versie is $updateto."
-        Add-Output "Het script wordt nu bijgewerkt."    
-        
-        # Nu het script updaten via de function Update-Script en dit loggen.
+        Write-Host "Er is geen update gevonden in de GitHub repository: $url" -f Red
         Write-Log -Message " " -Notimestamp
-        Write-Log -Message "Het script heeft een update gekregen naar versie $updateto."
+        Write-Log -Message "Er is geen update gevonden in de GitHub repository: $url"
+        } elseif ($huidigeversie -ge $updateto) {
+        Write-Host "Het script heeft de laatste update."
+        } else {
+        Write-Host "Er is een update beschikbaar voor dit script."
+        Write-Host "Het script wordt bijgewerkt naar versie $updateto." 
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Het script wordt bijgewerkt naar versie $updateto."
+
+        # Nu het script updaten via de function Update-Script en dit loggen.
         Update-Script $gedownloadebestand
         }
  
@@ -972,8 +976,6 @@ Function Search-Update {
         Remove-Item $tijdelijkepad -Recurse -Force
     }
     
-    # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $SearchUpdateForm.dispose()
 } # einde Search-Update
 
 Function Update-Script {
@@ -984,20 +986,26 @@ Function Update-Script {
     )
     
     $startmap = "$PSScriptRoot" # dit is de map waar de bestanden worden uitgepakt
-    Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
 
-    # Nu het script opnieuw starten
-    Write-Host "Het script wordt opnieuw gestart in $startmap"
-    Add-Output "Het script wordt opnieuw gestart in $startmap"
-    
+    # met een  try-catch blok controleren of Expand-Archive is gelukt.
+    try {
+        # Uitpakken van het zipbestand naar de map waar het script staat.
+        Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
+    } catch {
+        Write-Host "Fout bij het uitpakken van het zipbestand: $updateto" -ForegroundColor Red
+        Write-Log -Message "Fout bij het uitpakken van het zipbestand: $updateto"
+        return
+    }
+
     # Let op dat de tijdelijke map niet meer wordt geleegd. Zie functie Search-Update.
+
+    # In logbestand en console een bericht zetten dat het script is bijgewerkt.
+    Write-Log -Message "De update is uitgevoerd."
+    Write-Host "De update is uitgevoerd." -ForegroundColor Green
+    Write-Host "Het script wordt opnieuw gestart."
 
     # Even wachten tot de bestanden zijn uitgepakt en de gebruker de tijd heeft om de tekst te lezen.    
     Start-Sleep -Seconds 5
-
-    # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $SearchUpdateForm.dispose()
-
     # Nu het nieuwe script starten
     powershell -file "$PSScriptRoot\cetool.ps1"
 
