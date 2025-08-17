@@ -1,5 +1,19 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250817
+- Function Hide-ConsoleWindow toegevoegd om de console te verbergen. 
+  De console wordt gesloten als dit bij $gebruiker is ingesteld.
+- Veld "consolesluiten" toegevoerd aan $gebruiker om dit te laten werken. Standaardwaarde is Ja.
+- Instellingen van de gebruiker wordt opgeslagen na het inlezen zodat bij een mogelijke wijziging 
+  deze direct worden bewaard en om mogelijk te maken bepaalde instellingen, zoals console sluiten,
+  handmatig te wijzigen.
+- Bij function Hide-ConsoleWindow de variabele StringBuilder verwijderd. Werd niet gebruikt.
+  Dit werd door Visual Studio aanbevolen. Functie werkt nog steeds.
+- Bij Function ReadSettings aangepast "if ( $null -ne $init.$property )". 
+  Dit werd door Visual Studio aanbevolen. Functie werkt nog steeds.
+- Controle uitgevoerd of instellingen goed zijn ingelezen met try catch methode.
+  Ook bij het bewaren van instellingen gedaan.
+
 versie 1.0.0.alpha.250814
 - In de console wordt nu informatie weergegeven voor de gebruiker. O.a de naam van het programma.
 - Functions Search-Update en Update-Script zijn aangepast om info in de console weer te geven.
@@ -7,6 +21,8 @@ versie 1.0.0.alpha.250814
   Bij Search-Update en Update-Script wordt de try catch methode toegepast.
   Een extra controle of de naam van het item begint met "cetool_" en eindigt op ".zip" en
   een extra controle of een versie in de naam zit toegevoegd bij Search-Update.
+- Snelkoppeling_maken.ps1 script aangepast en windowsstyle hidden verwijderen.
+  Hier ook een aantal variabelen duidelijker gedefinieerd.
 
 versie 1.0.0.alpha.250813
 - Een lege regel toegevoegd in het logboek voor het uitvoeren van een update.

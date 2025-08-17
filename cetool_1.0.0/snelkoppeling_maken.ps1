@@ -17,18 +17,21 @@ $hoofdprog = -join ("$startmap","\","$hoofdprognaam")
 # Let op dat bij een 32bit systeem dit anders is.
 [string] $locatiePSexe = "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe"
 
+# Locatie van de snelkoppeling. Dit is de bureaublad map van de gebruiker. 
+$linkbureaublad = [Environment]::GetFolderPath("Desktop")
+
+# Naam en locatie van de snelkoppeling die gemaakt wordt
+$ShortcutPath = "$linkbureaublad\CE-tool.lnk"
+
 # Einde declareren variabelen ----------------------------------------------------
 
 # Maken van snelkoppeling
-$linkbureaublad = [Environment]::GetFolderPath("Desktop")
-$SourceFilePath = $locatiePSexe
-$ShortcutPath = "$linkbureaublad\CE-tool.lnk"
-
 $WScriptObj = New-Object -ComObject ("WScript.Shell")
 $shortcut = $WscriptObj.CreateShortcut($ShortcutPath)
-$shortcut.TargetPath = $SourceFilePath
+$shortcut.TargetPath = $locatiePSexe
+# Gekozen om de snelkoppeling te maken zonder de optie -WindowStyle Hidden, zodat de gebruiker de console kan zien.
 $shortcut.Arguments = "-ExecutionPolicy Bypass -NoProfile -file " + '"' + "$hoofdprog" + '"' 
-$shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -file " + '"' + "$hoofdprog" + '"' 
+# $shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -file " + '"' + "$hoofdprog" + '"' 
 $shortcut.IconLocation = "$startmap" + "\" + "cetool_icoon.ico"
 $shortcut.WorkingDirectory = "$startmap"
 $shortcut.Save()

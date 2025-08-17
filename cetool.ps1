@@ -6,7 +6,7 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250815' # extra label voor de alpha versie
+    extralabel = 'alpha.250817' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
@@ -22,6 +22,11 @@ write-host "Initialiseren van het programma."
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+# Functie om de console window te verbergen begint hier met de declaratie van de API.
+$code = '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);'
+$ShowWindowAsync = Add-Type -MemberDefinition $code -Name myAPI -PassThru
+$hwnd = (Get-Process -PID $pid).MainWindowHandle
 
 # Bestand waarin alle uitgevoerde stappen worden bijgehouden.
 $LogFile = "$PSScriptRoot\script_log.txt"
@@ -51,10 +56,11 @@ $gebruiker = @{}
 function gebruikersinstellingen {
 # hier worden de standaardinstellingen gedeclareerd die gebruikers kunnen wijzigen
 $Std_inst=@{
-    startmap  = ""       # standaard map waar de gebruiker het script start
-    uitvoermap = ""      # standaard map waar de gebruiker de uitvoer plaatst
-    uitvoernaam = ""     # standaard naam voor de uitvoer
-    aantaldagenlogs = 30 # aantal dagen dat de gebeurtenissen in het logboeken worden bewaard
+    startmap  = ""        # standaard map waar de gebruiker het script start
+    uitvoermap = ""       # standaard map waar de gebruiker de uitvoer plaatst
+    uitvoernaam = ""      # standaard naam voor de uitvoer
+    aantaldagenlogs = 30  # aantal dagen dat de gebeurtenissen in het logboeken worden bewaard
+    consolesluiten = 'Ja' # sluiten van de console window na het uitvoeren van het script
     }
 return $Std_inst
 } # einde gebruikersinstellingen
@@ -167,14 +173,24 @@ $init = gebruikersinstellingen
 # inlezen initialisatiebestand als deze bestaat en toevoegen of verwijderen waarden van $init
 # dit is nodig zodat, als de initialisatiebestand wordt ingelezen, eventuele nieuwe variabelen worden behouden en verwijderde variabelen niet worden toegevoegd. 
 if (test-path -path $gebruikersbestand -pathtype leaf) { 
-    # inlezen van object als hashwaarden. hier staan de gewijzigde waarden in die je wil behouden.
-    $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
 
+    # try-catch om te voorkomen dat het bestand niet goed wordt ingelezen.
+    try {
+        # inlezen van object als hashwaarden. hier staan de standaard waarden in die je wil behouden.
+        $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
+    } catch {
+        # foutmelding geven en terugkeren naar init
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het inlezen van het gebruikersinstellingen bestand: $gebruikersbestand"
+        Write-Host "Fout bij het inlezen van het gebruikersinstellingen bestand: $gebruikersbestand"
+        return $init
+    }
+   
     # waarden overzetten naar $init. nieuwe waarden worden behouden. verwijderde waarden worden niet toegevoegd.
     foreach( $property in $myobject.psobject.properties.name ) {
  
         # alleen toevoegen als deze bij 'init' al bestaat
-        if ( $init.$property -ne $null) { 
+        if ( $null -ne $init.$property ) { 
             $init[$property] = $myObject.$property
             }
 
@@ -214,7 +230,17 @@ function SaveSettings {
     # schrijven naar bestand
     # $myObject | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
 
-    $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+    # TRY-CATCH om te voorkomen dat het bestand niet goed wordt weggeschreven.
+    try {
+        # Zet de inhoud van $init om naar JSON en schrijf het naar het gebruikersbestand
+        $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+    } catch {
+        # foutmelding geven en terugkeren naar init
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het wegschrijven van het gebruikersinstellingen bestand: $gebruikersbestand"
+        Write-Host "Fout bij het wegschrijven van het gebruikersinstellingen bestand: $gebruikersbestand"
+        return
+    }
 
 } # einde SaveSettings
 function SelectExcelForm {
@@ -275,7 +301,6 @@ function Show-Logboek {
        
     $null = $logForm.ShowDialog()
 } # einde Show-Logboek
-
 
 function Add-Output {
     param([string]$text)
@@ -1013,6 +1038,39 @@ Function Update-Script {
     exit;
 } # einde Update-Script
 
+# Deze functie verbergt de console window van PowerShell
+function Hide-ConsoleWindow() {
+  
+  if ($hwnd -ne [System.IntPtr]::Zero) {
+    # When you got HWND of the console window:
+    # (It would appear that Windows Console Host is the default terminal application)
+    $null = $ShowWindowAsync::ShowWindowAsync($hwnd, 0)
+  } else {
+    # When you failed to get HWND of the console window:
+    # (It would appear that Windows Terminal is the default terminal application)
+
+    # Mark the current console window with a unique string.
+    $UniqueWindowTitle = New-Guid
+    $Host.UI.RawUI.WindowTitle = $UniqueWindowTitle
+    # $StringBuilder = New-Object System.Text.StringBuilder 1024
+
+    # Search the process that has the window title generated above.
+    $TerminalProcess = (Get-Process | Where-Object { $_.MainWindowTitle -eq $UniqueWindowTitle })
+    # Get the window handle of the terminal process.
+    # Note that GetConsoleWindow() in Win32 API returns the HWND of
+    # powershell.exe itself rather than the terminal process.
+    # When you call ShowWindowAsync(HWND, 0) with the HWND from GetConsoleWindow(),
+    # the Windows Terminal window will be just minimized rather than hidden.
+    $hwnd = $TerminalProcess.MainWindowHandle
+    if ($hwnd -ne [System.IntPtr]::Zero) {
+      # afsluiten terminal. Met $null zie je ook geen resultaat op he scherm. dus het woord "true" verschijnt niet.  
+      $null = $ShowWindowAsync::ShowWindowAsync($hwnd, 0) 
+      
+    } else {
+      Write-Host "Niet gelukt om de console window te verbergen." -ForegroundColor Red
+    }
+  }
+} # einde Hide-ConsoleWindow
 
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
@@ -1084,32 +1142,21 @@ function Show-MainForm {
 ############ start script ###############
 
 # tijdelijk uitgeschakeld
-# Search-Update;
+Search-Update;
 
-# Lees de instellingen van de gebruiker in
 # Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
 $gebruiker = ReadSettings
 
-# SaveSettings $gebruiker
+# Instellingen van de gebruiker opslaan zodat bij een mogelijke wijziging deze direct worden opgeslagen.
+SaveSettings $gebruiker
 
+Start-Sleep -Seconds 3
+# Sluiten console als dit bij $gebruiker is ingesteld.
+if ($gebruiker.consolesluiten -eq 'Ja') {
+    # Dit is de functie die de console window verbergt
+    Hide-ConsoleWindow;
+}
+
+
+# Dit is de hoofdloop van het script. Het blijft draaien totdat de gebruiker het afsluit.
 Show-MainForm;
-
-<# 
-#dit is een test
-
-$gebr1 = gebruikersinstellingen
-
-# SaveSettings $gebr
-
-$gebr1
-
-$gebr2 = ReadSettings
-
-"========= new================"
-
-$gebr2
-
-SaveSettings $gebr1
-pause
-
- #>

@@ -1,6 +1,7 @@
 {
-  "uitvoermap": "C:\\Users\\0101925\\Downloads",
-  "startmap": "C:\\Users\\0101925\\Desktop\\temp",
-  "uitvoernaam": "laatste_test_hoor_echt_waar",
-  "aantaldagenlogs": 30
+    "startmap":  "",
+    "uitvoermap":  "",
+    "aantaldagenlogs":  30,
+    "consolesluiten":  "Ja",
+    "uitvoernaam":  ""
 }

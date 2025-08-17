@@ -1,3 +1,5 @@
+2025-08-17 16:01:27	Fout bij het inlezen van het gebruikersinstellingen bestand: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\gebruikersinstellingen.json
+ 
 2025-08-15 22:52:16	Klaar!
 	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\test [2212].zip
 	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
