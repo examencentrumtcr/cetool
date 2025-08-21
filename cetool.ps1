@@ -6,7 +6,7 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250817' # extra label voor de alpha versie
+    extralabel = 'alpha.250821' # extra label voor de versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
@@ -920,10 +920,17 @@ Function Search-Update {
     # Controleer of er een update is voor dit script
 
     $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
-    # Als de tijdelijke map bestaat wordt deze geleegd en het update niet uitgevoerd.
+    # Als de tijdelijke map bestaat wordt deze geleegd en de update niet uitgevoerd.
     if (Test-Path $tijdelijkepad) {
         write-host "Er is net een update uitgevoerd. De tijdelijke map wordt geleegd."
         Remove-Item $tijdelijkepad -Recurse -Force
+        return
+    }
+
+    # alleen starten als programma.mode niet de status alpha of beta heeft.
+    # De tekst die wordt weergegeven is er alleen ter informatie en controle.
+    if ("alpha","beta" -contains($programma.mode)) {
+        Write-Host "Er is geen update beschikbaar voor dit script in de alpha of beta versie."
         return
     }
 
@@ -939,7 +946,7 @@ Function Search-Update {
         $url = -join ($programma.github,"prerelease")
         }
 
-    # inhoud van een map in github ophalen
+    # inhoud van de map in github ophalen
     try {
         $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
     } catch {

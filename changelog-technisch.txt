@@ -1,5 +1,11 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.alpha.250821
+- In Github de map Prerelease aangemaakt en een test bestand in gezet.
+  $programma.Github heeft nu de waarde "https://api.github.com/repos/examencentrumtcr/cetool/contents/".
+  Dus zonder "latest" aan het eind. Dit zodat bij Search-Update afhankelijk van de mode "latest" of "prerelease"
+  kan toevoegen. Bij Search-Update is dit gewijzigd.
+
 versie 1.0.0.alpha.250817
 - Function Hide-ConsoleWindow toegevoegd om de console te verbergen. 
   De console wordt gesloten als dit bij $gebruiker is ingesteld.
