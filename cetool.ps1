@@ -9,7 +9,7 @@ $programma = @{
     extralabel = 'alpha.250817' # extra label voor de alpha versie
     mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
-    github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
+    github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
 }
 
 write-host ""
@@ -933,6 +933,12 @@ Function Search-Update {
     $huidigeversie = $programma.versie # huidige versie van het programma
 
     $url = $programma.github # dit is de url van de github repository 
+    if ($programma.mode -eq "release") {
+        $url = -join ($programma.github,"latest")
+        } else {
+        $url = -join ($programma.github,"prerelease")
+        }
+
     # inhoud van een map in github ophalen
     try {
         $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
