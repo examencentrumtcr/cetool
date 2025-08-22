@@ -110,7 +110,7 @@ $StandaardForm                            = New-Object system.Windows.Forms.Form
 $StandaardForm.MaximumSize = New-Object System.Drawing.size($size_x,$size_y)
 $StandaardForm.MinimumSize = New-Object System.Drawing.size($size_x,$size_y)
 $StandaardForm.text                       = $titel
-$StandaardForm.TopMost                    = $true
+# $StandaardForm.TopMost                    = $true
 $StandaardForm.StartPosition              = 'CenterScreen'
 # $StandaardForm.BackColor = "white"
 $StandaardForm.MaximizeBox = $False
@@ -1146,7 +1146,7 @@ function Show-MainForm {
     $mainForm.Controls.Add($btnExit)
 
     # zorgen dat deze venster altijd bovenop komt
-    $mainForm.TopMost = $true
+    # mainForm.TopMost = $true
 
     $null = $mainForm.ShowDialog()
 } # einde Show-MainForm
@@ -1154,7 +1154,7 @@ function Show-MainForm {
 
 ############ start script ###############
 
-# tijdelijk uitgeschakeld
+# Dit is de functie die zoekt naar een update van het script en deze uitvoert als er een update is.
 Search-Update;
 
 # Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
