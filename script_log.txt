@@ -1,3 +1,8 @@
+2025-08-23 02:01:54	Er zijn gebeurtenissen in het logboek verwijderd die ouder zijn dan 8 dagen.
+ 
+2025-08-23 01:56:35	De gebeurtenissen uit het logboek die ouder zijn dan 30 zijn automatisch opgeschoond.
+ 
+2025-08-23 01:34:32	De gebeurtenissen uit het logboek die ouder zijn dan 50 zijn automatisch opgeschoond.
 2025-08-17 16:01:27	Fout bij het inlezen van het gebruikersinstellingen bestand: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\gebruikersinstellingen.json
  
 2025-08-15 22:52:16	Klaar!
@@ -12,58 +17,4 @@
     	Aantal ingelezen rijen: 9
     	Uitvoermap: C:\Users\0101925\Desktop\temp
     	Uitvoernaam: test [2212]
- 
-2025-08-13 23:29:56	Klaar!
-	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\test naam ingevoerd.zip
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767599.xml
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599_dos.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599.xml
-2025-08-13 23:29:56	Omzetten van Excel data naar Facet formaat is gestart.
-    	Gekozen bestand: C:\Users\0101925\Desktop\temp\test.xlsx
-    	Aantal ingelezen rijen: 9
-    	Uitvoermap: C:\Users\0101925\Desktop\temp
-    	Uitvoernaam: test naam ingevoerd
- 
-2025-07-24 00:10:22	Klaar!
-	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\cetool\Facetbestand_20250724_001008.zip
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767599.xml
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599_dos.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599.xml
-2025-07-24 00:10:21	Omzetten van Excel data naar Facet formaat is gestart.
-    	Gekozen bestand: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\testen\cetool test.250717\TCRtoets2.xlsx
-    	Aantal ingelezen rijen: 9
-    	Uitvoermap: C:\Users\0101925\Desktop\temp\cetool
-    	Uitvoernaam: Facetbestand_20250724_001008
- 
-2025-07-23 23:28:20	Klaar!
-	Bestand aangemaakt: C:\Users\0101925\Documents\Facetbestand_20250723_232809.zip
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767599_dos.xml
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767599.xml
-2025-07-23 23:28:20	Omzetten van Excel data naar Facet formaat is gestart.
-    	Gekozen bestand: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\archief\cetool v0.2.0+4.250616\TCRtoets_verkort.xlsx
-    	Aantal ingelezen rijen: 2
-    	Uitvoermap: C:\Users\0101925\Documents
-    	Uitvoernaam: Facetbestand_20250723_232809
- 
-2025-07-23 23:24:22	Klaar!
-	Bestand aangemaakt: C:\Users\0101925\Desktop\temp\cetool\Facetbestand_20250723_232407.zip
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767599.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767594.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\25LP\159353767593.xml
-	Groepsmap aangemaakt : C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767593.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767592_dos.xml
-	XML gemaakt: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\github\cetool\Output\00GT\159353767592.xml
-2025-07-23 23:24:22	Omzetten van Excel data naar Facet formaat is gestart.
-    	Gekozen bestand: C:\Users\0101925\OneDrive - Zadkine\Documenten\WindowsPowerShell\testen\cetool test.250717\TCRtoets2 - test.xlsx
-    	Aantal ingelezen rijen: 9
-    	Uitvoermap: C:\Users\0101925\Desktop\temp\cetool
-    	Uitvoernaam: Facetbestand_20250723_232407
  

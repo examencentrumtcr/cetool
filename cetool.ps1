@@ -6,10 +6,17 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250821' # extra label voor de versie
-    mode = 'alpha' # alpha, beta, prerelease of release
+    extralabel = 'alpha.250822' # extra label voor de versie
+    mode = 'beta' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
+
+    <# Uitleg verschillende modes :
+    alpha      : Logbestanden verwijderen is uit, Automatisch updates is uit en Console blijft open
+    beta       : Automatisch updates is uit en Console blijft open
+    prerelease : Wordt gebruikt om alles te testen. Er wordt gecontroleerd op prerelease updates.
+    release    : Normale gebruik
+    #>
 }
 
 write-host ""
@@ -59,7 +66,8 @@ $Std_inst=@{
     startmap  = ""        # standaard map waar de gebruiker het script start
     uitvoermap = ""       # standaard map waar de gebruiker de uitvoer plaatst
     uitvoernaam = ""      # standaard naam voor de uitvoer
-    aantaldagenlogs = 30  # aantal dagen dat de gebeurtenissen in het logboeken worden bewaard
+    aantaldagenlogs = 30  # aantal dagen dat de gebeurtenissen in het logboek worden bewaard
+    logschonen = 'Ja'     # automatisch de gebeurtenissen in het logboek opschonen
     consolesluiten = 'Ja' # sluiten van de console window na het uitvoeren van het script
     }
 return $Std_inst
@@ -298,7 +306,24 @@ function Show-Logboek {
     $btnClose.BackColor = "White"
     $btnClose.DialogResult = [System.Windows.Forms.DialogResult]::cancel
     $logForm.Controls.Add($btnClose)
-       
+    
+    # Voeg een knop toe om het logboek te wissen
+    $btnClear = New-Object System.Windows.Forms.Button
+    $btnClear.Text = "Logboek wissen"
+    $btnClear.Location = "210,320"
+    $btnClear.Size = "150,30"
+    $btnClear.BackColor = "White"
+    $btnClear.Add_Click({
+        # Controleer of het logbestand bestaat 
+        if (Test-Path $LogFile) {
+            # Leegmaken en opnieuw schrijven naar het logbestand
+            Set-Content -Path $LogFile -Value ""
+            Write-Log -Message "Logboek is handmatig gewist."
+            $txtLog.Text = Get-Content -Path $LogFile -Raw
+        }
+    })
+    $logForm.Controls.Add($btnClear)
+
     $null = $logForm.ShowDialog()
 } # einde Show-Logboek
 
@@ -919,7 +944,7 @@ function Compress-Folder {
 Function Search-Update {
     # Controleer of er een update is voor dit script
 
-    $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
+    $tijdelijkepad = "$PSScriptRoot\update_files\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
     # Als de tijdelijke map bestaat wordt deze geleegd en de update niet uitgevoerd.
     if (Test-Path $tijdelijkepad) {
         write-host "Er is net een update uitgevoerd. De tijdelijke map wordt geleegd."
@@ -1053,8 +1078,18 @@ Function Update-Script {
 
 # Deze functie verbergt de console window van PowerShell
 function Hide-ConsoleWindow() {
-  
-  if ($hwnd -ne [System.IntPtr]::Zero) {
+
+# als dit bij $gebruiker is ingesteld en mode van het programma is prerelease of release.
+if ($gebruiker.consolesluiten -eq 'Nee') {
+    Write-Host "De console window wordt niet verborgen omdat dit is ingesteld in de instellingen."
+    return;
+}
+if ("alpha","beta" -contains($programma.mode)) {
+    Write-Host "De console window wordt niet verborgen omdat dit een alpha of beta versie is."
+    return;
+}
+
+if ($hwnd -ne [System.IntPtr]::Zero) {
     # When you got HWND of the console window:
     # (It would appear that Windows Console Host is the default terminal application)
     $null = $ShowWindowAsync::ShowWindowAsync($hwnd, 0)
@@ -1084,6 +1119,66 @@ function Hide-ConsoleWindow() {
     }
   }
 } # einde Hide-ConsoleWindow
+
+Function Remove_Logevents {
+
+# Deze functie verwijdert de gebeurtenissen uit het logboek
+
+# alleen starten als programma.mode niet de status alpha  heeft.
+if ("alpha" -contains($programma.mode)) {
+        Write-Host "De gebeurtenissen uit het logboek worden in de alpha versie niet automatisch opgeschoond."
+        return
+    }
+# Uitvoeren van deze functie is alleen mogelijk als de gebruiker dit heeft ingesteld in de instellingen.
+if ($gebruiker.logschonen -ne 'Ja') {
+    Write-Host "Er is ingesteld om de gebeurtenissen uit het logboek niet automatisch op te schonen."
+    return
+}
+# controleer of het logbestand bestaat
+if (!(Test-Path $logFile)) {
+        Write-Host "Er is geen logboek om op te schonen."
+        return
+    } 
+
+# Parameters
+$dagenBehouden = $gebruiker.aantaldagenlogs
+$grensDatum = (Get-Date).AddDays(-$dagenBehouden)
+# Buffer voor de regels die we willen behouden
+$regelsOmTeBehouden = @()
+# Aangeven dat we de grens hebben overschreden. Dit is nodig om te weten of er regels zijn verwijderd.
+$grensbereik = $false 
+
+# Hier starten we met het verwijderen van de logevents die ouder zijn dan de ingestelde dagen.
+
+# Lees het logbestand regel voor regel
+foreach ($regel in Get-Content $logFile) {
+    if ($regel -match '^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})') {
+        $regelDatum = [datetime]::ParseExact($matches[1], 'yyyy-MM-dd HH:mm:ss', $null)
+        
+        if ($regelDatum -lt $grensDatum) {
+            $grensbereik = $true
+            break  # Stop als deze regel ouder is dan de grens
+        }
+    }
+
+    # Voeg toe aan lijst zolang grens niet overschreden is
+    $regelsOmTeBehouden += $regel
+}
+
+# Overschrijf het originele bestand met de behouden regels
+$regelsOmTeBehouden | Set-Content $logFile
+
+if ($grensbereik) {
+    $Message = "Er zijn gebeurtenissen in het logboek verwijderd die ouder zijn dan $dagenBehouden dagen."
+    Write-Host $Message
+    Write-Log -Message " " -Notimestamp
+    Write-Log -Message $Message
+} else {
+    Write-Host "Er zijn geen gebeurtenissen in het logboek die ouder zijn dan $dagenBehouden dagen."
+}
+
+
+} # einde Remove_Logevents
 
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
@@ -1145,9 +1240,9 @@ function Show-MainForm {
     })
     $mainForm.Controls.Add($btnExit)
 
-    # zorgen dat deze venster altijd bovenop komt
-    # mainForm.TopMost = $true
-
+    # activeren van hoofdvenster
+    $mainForm.Add_Shown({$mainForm.Activate()})
+    # Hoofdmenu tonen
     $null = $mainForm.ShowDialog()
 } # einde Show-MainForm
 
@@ -1163,12 +1258,14 @@ $gebruiker = ReadSettings
 # Instellingen van de gebruiker opslaan zodat bij een mogelijke wijziging deze direct worden opgeslagen.
 SaveSettings $gebruiker
 
+# Automatisch de logevents verwijderen die ouder zijn dan de ingestelde dagen.
+Remove_Logevents
+
+# De gebruiker de tijd te geven om de tekst te lezen.
 Start-Sleep -Seconds 3
-# Sluiten console als dit bij $gebruiker is ingesteld.
-if ($gebruiker.consolesluiten -eq 'Ja') {
-    # Dit is de functie die de console window verbergt
-    Hide-ConsoleWindow;
-}
+
+# Verbergen van de console venster 
+Hide-ConsoleWindow;
 
 
 # Dit is de hoofdloop van het script. Het blijft draaien totdat de gebruiker het afsluit.

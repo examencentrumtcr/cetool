@@ -1,7 +1,8 @@
 {
-  "aantaldagenlogs": 30,
-  "uitvoermap": "",
-  "uitvoernaam": "",
-  "consolesluiten": "Ja",
-  "startmap": ""
+    "uitvoernaam":  "",
+    "aantaldagenlogs":  8,
+    "logschonen":  "Ja",
+    "uitvoermap":  "",
+    "consolesluiten":  "Ja",
+    "startmap":  ""
 }

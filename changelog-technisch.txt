@@ -2,6 +2,16 @@
 
 versie 1.0.0.alpha.250822
 - De vensters worden niet meer standaard boven andere vensters weergegeven. De optie Topmost is verwijderd.
+- Activeren van hoofdvenster en deze op voorgrond gezet met  $mainForm.Add_Shown({$mainForm.Activate()})
+- De tijdelijke map waar de update-bestanden worden opgeslagen gewijzigd. Temp is een naam dat vaak wordt gebruikt.
+- Een knop bij show_logboek is toegevoegd om logbestand te legen. 
+- Logboek gebeurtenissen ouder dan X dagen verwijderen. Bij de gebruikersinstellingen is een variabele toegevoegd hiervoor. 
+- Uitleg toegevoegd bij de verschillende modes van object $pgrogramma.mode.
+	alpha      : Logbestanden verwijderen is uit, Automatisch updates is uit en Console blijft open
+    	beta       : Automatisch updates is uit en Console blijft open
+    	prerelease : Wordt gebruikt om alles te testen. Er wordt gecontroleerd op prerelease updates.
+    	release    : Normale gebruik
+- Bij de verschillende Functions wordt duidelijk aangegeven in de console wanneer het niet uitgevoerd wordt.
 
 versie 1.0.0.alpha.250821
 - In Github de map Prerelease aangemaakt en een test bestand in gezet.
