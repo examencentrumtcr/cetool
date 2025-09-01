@@ -1,9 +1,10 @@
 ﻿# test om een standaard uitvoermap in te stellen
 
-$invoer = "[computer] [gebruiker] [datum]-[tijd] - [uren]:[minuten]:[seconden]"
+# $invoer = "[computer] [gebruiker] [datum]-[tijd] - [uren]:[minuten]:[seconden]"
+$invoer = ""
+
 $uitvoer = $invoer
 do {
-    
     $gevonden = $uitvoer.IndexOf('[')
     if ($gevonden -ge 0) {
         # eerste gevonden

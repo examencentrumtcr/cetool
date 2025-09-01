@@ -6,7 +6,7 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250822' # extra label voor de versie
+    extralabel = 'alpha.250901' # extra label voor de versie
     mode = 'beta' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
@@ -81,9 +81,94 @@ return $std_inoutput
 
 Function StandardOutputFileName {
 # Standaard uitvoernaam voor het omgezette bestand
-[string]$std_outputname = "Facetbestand_" + (Get-Date -Format "yyyyMMdd_HHmmss")
+[string]$std_outputname = "Facetbestand_[datum]_[tijd]"
 return $std_outputname
 }
+
+Function CreateOutputFileName {
+param (
+    [Parameter(Mandatory = $false)] [string]$invoer
+)
+
+# Deze functie maakt een uitvoernaam aan op basis van de ingestelde uitvoernaam met variabelen
+# De volgende variabelen kunnen worden gebruikt in de uitvoernaam:
+# [jaar]      : huidig jaar (4 cijfers)
+# [maand]     : huidige maand (2 cijfers)
+# [dag]       : huidige dag (2 cijfers)
+# [datum]     : huidige datum (6 cijfers, formaat yyMMdd)
+# [tijd]      : huidige tijd (6 cijfers, formaat HHmmss)
+# [uren]     : huidige uren (2 cijfers, formaat HH)
+# [minuten]   : huidige minuten (2 cijfers, formaat mm)
+# [seconden]  : huidige seconden (2 cijfers, formaat ss)
+# [gebruiker] : naam van de huidige gebruiker
+# [computer]  : naam van de huidige computer
+# Als een niet herkende variabele wordt gebruikt, dan wordt deze zonder de haakjes weergegeven.
+# voorbeeld: "Facetbestand_[datum]_[tijd]_[gebruiker]" wordt "Facetbestand_240901_153045_bneves"
+
+# Als de invoer leeg is, dan de standaard naam gebruiken
+if ($invoer -eq "") {
+    $invoer = StandardOutputFileName
+    Write-Host "De standaard uitvoernaam wordt gebruikt: $invoer"
+}
+
+$uitvoer = $invoer
+do {
+    $gevonden = $uitvoer.IndexOf('[')
+    if ($gevonden -ge 0) {
+        # eerste gevonden
+        $gevonden2 = $uitvoer.IndexOf(']') 
+        if ($gevonden2 -ge 0) {
+            # het gevonden woord die automatisch wordt ingevuld
+            $woord = $uitvoer.Substring($gevonden,$gevonden2-$gevonden+1)
+            # afhankelijk van het woord, de nieuwe waarde ophalen
+            switch ($woord) {
+                "[jaar]" {
+                $nieuw = get-date -Format "yyyy"
+                         }
+                "[maand]" {
+                $nieuw = get-date -Format "MM"
+                         }
+                "[dag]" {
+                $nieuw = get-date -Format "dd"
+                         }
+                "[datum]" {
+                $nieuw = get-date -Format "yyMMdd"
+                         }
+                "[tijd]" {
+                $nieuw = get-date -Format "HHmmss"
+                         }
+                "[minuten]" {
+                $nieuw = get-date -Format "mm"
+                         }
+                "[uren]" {
+                $nieuw = get-date -Format "HH"
+                         }
+                "[seconden]" {
+                $nieuw = get-date -Format "ss"
+                         }
+                "[gebruiker]" {
+                $nieuw = $env:USERNAME
+                         }
+                "[computer]" {
+                $nieuw = $env:ComputerNAME
+                         }
+                default {
+                # het woord tussen de haakjes is niet herkend en wordt terug gegeven zonder de haakjes.
+                $nieuw = $woord.Substring(1,$woord.length-2)
+                }
+            } # einde switch
+            # Het gevonden woord wordt vervangen door wat het representeert.
+            $uitvoer = $uitvoer.Replace($woord,$nieuw)
+
+        } else {
+        # als de eerste teken [ is gevonden maar de 2e teken ] niet, dan stoppen. dus moet gevonden naar -1
+        $gevonden = -1
+        }
+    }
+} while ($gevonden -ge 0)
+
+return $uitvoer
+} # einde CreateOutputFileName
 
 Function Empty_Exceldata {
 # Leeg maken van array en standaard waarden geven
@@ -549,7 +634,8 @@ function Show-ConvertForm {
 
     $convertForm = declareren_standaardvenster -titel "Overzicht en opties wijzigen" -size_x 600 -size_y 380
 
-    # geselecteerde Exceldata uit array halen
+    # geselecteerde Exceldata uit array halen. Dit maakt het weergeven van de info overzichtelijker.
+    # Selectedlocation wordt ook gebruikt om de standaard zoekmap in te stellen.
     $SelectedFile = Split-Path -Path $Exceldata.geselecteert -Leaf
     $Selectedlocation = Split-Path -Path $Exceldata.geselecteert -Parent
     $outputname = $Exceldata.uitvoernaam
@@ -665,26 +751,38 @@ function Show-ConvertForm {
     $btnNext.BackColor = "White"
     # $btnNext.DialogResult = [System.Windows.Forms.DialogResult]::ok
     $btnNext.Add_Click({
-        # Controleer of uitvoernaam is ingevuld
-        if ([string]::IsNullOrWhiteSpace($txtOutput.Text)) {
-            [System.Windows.Forms.MessageBox]::Show("Voer een uitvoernaam in.", "Foutmelding", "OK", "Error")
-            return
-        }
+        
         # Controleer of uitvoermap is ingevuld
         if ([string]::IsNullOrWhiteSpace($OutputPath.Text)) {
             [System.Windows.Forms.MessageBox]::Show("Selecteer een uitvoermap.", "Foutmelding", "OK", "Error")
             return
         }
+
+        # Als er geen uitvoernaam is ingevuld dan de standaard naam gebruiken en deze bewaren.
+        if ([string]::IsNullOrWhiteSpace($txtOutput.Text)) {
+            $txtOutput.Text = StandardOutputFileName
+            $gebruiker.uitvoernaam = $txtOutput.Text
+        }
+
         # In de titel aangeven dat de data wordt omgezet
         $convertForm.Text = "Data wordt omgezet naar Facet formaat..."
         # Data weer in array zetten en naar procedure voor het omzetten
-        $Exceldata.uitvoernaam = $txtOutput.Text
+        $Exceldata.uitvoernaam = CreateOutputFileName -invoer $txtOutput.Text
         $Exceldata.uitvoermap = $OutputPath.Text
         # en alleen outputbox zichtbaar
         $outputBox.Visible = $true
         
+        # testen
+        # $test = $Exceldata.uitvoernaam
+        $test = $txtOutput.Text
+        [System.Windows.Forms.MessageBox]::Show("Uitvoernaam is $test", "Info", "OK", "Information")
+
+        # Controleer of uitvoernaam is ingevuld
+        if ([string]::IsNullOrWhiteSpace($Exceldata.uitvoernaam)) {
+            [System.Windows.Forms.MessageBox]::Show("Geef een uitvoernaam. Deze mag niet leeg zijn.", "Foutmelding", "OK", "Error")
+            return
+        }
         # de knop om te sluiten is even niet klikbaar
-        
         # alle andere knoppen en text onzichtbaar maken
         $btnBack.Visible = $false
         $btnSelect.Visible = $false
@@ -1100,8 +1198,7 @@ if ($hwnd -ne [System.IntPtr]::Zero) {
     # Mark the current console window with a unique string.
     $UniqueWindowTitle = New-Guid
     $Host.UI.RawUI.WindowTitle = $UniqueWindowTitle
-    # $StringBuilder = New-Object System.Text.StringBuilder 1024
-
+    
     # Search the process that has the window title generated above.
     $TerminalProcess = (Get-Process | Where-Object { $_.MainWindowTitle -eq $UniqueWindowTitle })
     # Get the window handle of the terminal process.
@@ -1166,7 +1263,12 @@ foreach ($regel in Get-Content $logFile) {
 }
 
 # Overschrijf het originele bestand met de behouden regels
-$regelsOmTeBehouden | Set-Content $logFile
+# Als er geen regels meer zijn, dan wordt een leeg bestand gemaakt. 
+if ($regelsOmTeBehouden.Count -eq 0) {
+    New-Item -Path $logFile -ItemType File -Force | Out-Null
+    } else {
+    $regelsOmTeBehouden | Set-Content $logFile
+    }
 
 if ($grensbereik) {
     $Message = "Er zijn gebeurtenissen in het logboek verwijderd die ouder zijn dan $dagenBehouden dagen."
@@ -1174,7 +1276,7 @@ if ($grensbereik) {
     Write-Log -Message " " -Notimestamp
     Write-Log -Message $Message
 } else {
-    Write-Host "Er zijn geen gebeurtenissen in het logboek die ouder zijn dan $dagenBehouden dagen."
+    Write-Host "Er zijn geen gebeurtenissen in het logboek, ouder dan $dagenBehouden dagen, die verwijderd moeten worden."
 }
 
 
@@ -1258,7 +1360,7 @@ $gebruiker = ReadSettings
 # Instellingen van de gebruiker opslaan zodat bij een mogelijke wijziging deze direct worden opgeslagen.
 SaveSettings $gebruiker
 
-# Automatisch de logevents verwijderen die ouder zijn dan de ingestelde dagen.
+# Automatisch de gebeurteniessenin het logboek verwijderen die ouder zijn dan de ingestelde dagen.
 Remove_Logevents
 
 # De gebruiker de tijd te geven om de tekst te lezen.
