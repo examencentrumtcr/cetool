@@ -1,7 +1,7 @@
 ﻿# test om een standaard uitvoermap in te stellen
 
-# $invoer = "[computer] [gebruiker] [datum]-[tijd] - [uren]:[minuten]:[seconden]"
-$invoer = ""
+$invoer = "[computer] [gebruiker] [datum]-[tijd] - [uren]:[minuten]:[seconden]"
+# $invoer = ""
 
 $uitvoer = $invoer
 do {
