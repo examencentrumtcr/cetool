@@ -1267,6 +1267,5 @@ Start-Sleep -Seconds 3
 # Verbergen van de console venster 
 Hide-ConsoleWindow;
 
-
 # Dit is de hoofdloop van het script. Het blijft draaien totdat de gebruiker het afsluit.
 Show-MainForm;
