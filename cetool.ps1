@@ -358,7 +358,7 @@ return $selectedFile
 
 function Show-Logboek {
     
-    $logForm = declareren_standaardvenster -titel "Logboek" -size_x 900 -size_y 400
+    $logForm = declareren_standaardvenster -titel "Logboek" -size_x 900 -size_y 450
 
     $txtLog = New-Object System.Windows.Forms.TextBox
     #$txtLog.Dock = "Fill"
@@ -382,11 +382,34 @@ function Show-Logboek {
         $txtLog.Text = "Logboek is leeg."
         }
 
+    $autologsverwijderen = New-Object System.Windows.Forms.Checkbox 
+    $autologsverwijderen.Location = New-Object System.Drawing.Point(10, 320)
+    $autologsverwijderen.Size = New-Object System.Drawing.Size(555,30)
+    $autologsverwijderen.Text = "Gebeurtenissen in het logboek automatisch legen na de volgende aantal dagen"
+    if ($gebruiker.logschonen -eq "Ja") {
+        $autologsverwijderen.Checked = $true
+    } else {
+        $autologsverwijderen.Checked = $false
+    }
+    # $standaarduitvoermap.checked = $true
+    $logForm.Controls.Add($autologsverwijderen)
+
+    $aantaldagenlogs = New-Object System.Windows.Forms.TextBox 
+    $aantaldagenlogs.Location = New-Object System.Drawing.Size(570,322) 
+    $aantaldagenlogs.Size = New-Object System.Drawing.Size(55,50)
+    $aantaldagenlogs.MaxLength = 4
+    $aantaldagenlogs.Font = 'Microsoft Sans Serif,11'
+    $aantaldagenlogs.Text=$gebruiker.aantaldagenlogs
+    $aantaldagenlogs.Add_TextChanged({
+        $this.Text = $this.Text -replace '\D'
+    })
+    $logForm.Controls.Add($aantaldagenlogs)
+
     # Voeg een sluitknop toe
     $btnClose = New-Object System.Windows.Forms.Button
     $btnClose.Text = "Terug"
     # $btnClose.Dock = "Bottom"
-    $btnClose.location = "50,320" 
+    $btnClose.location = "50,370" 
     $btnClose.size = "150,30"
     $btnClose.BackColor = "White"
     $btnClose.DialogResult = [System.Windows.Forms.DialogResult]::cancel
@@ -395,7 +418,7 @@ function Show-Logboek {
     # Voeg een knop toe om het logboek te wissen
     $btnClear = New-Object System.Windows.Forms.Button
     $btnClear.Text = "Logboek wissen"
-    $btnClear.Location = "210,320"
+    $btnClear.Location = "210,370"
     $btnClear.Size = "150,30"
     $btnClear.BackColor = "White"
     $btnClear.Add_Click({
@@ -410,6 +433,21 @@ function Show-Logboek {
     $logForm.Controls.Add($btnClear)
 
     $null = $logForm.ShowDialog()
+
+    # keuze automatisch opschonen opslaan
+    if ($autologsverwijderen.Checked) {
+        $gebruiker.logschonen = "Ja"
+    } else {
+        $gebruiker.logschonen = "Nee"
+    }
+    # keuze aantal dagen opslaan
+    # als de leeg is, dan 30 dagen gebruiken
+    if ($aantaldagenlogs.Text -eq "") {
+        $aantaldagenlogs.Text = 30
+    }
+    $gebruiker.aantaldagenlogs = $aantaldagenlogs.Text
+    SaveSettings -init $gebruiker
+
 } # einde Show-Logboek
 
 function Add-Output {
@@ -1364,7 +1402,7 @@ SaveSettings $gebruiker
 Remove_Logevents
 
 # De gebruiker de tijd te geven om de tekst te lezen.
-Start-Sleep -Seconds 3
+# Start-Sleep -Seconds 3
 
 # Verbergen van de console venster 
 Hide-ConsoleWindow;

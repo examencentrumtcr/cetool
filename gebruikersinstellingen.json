@@ -1,7 +1,7 @@
 {
     "uitvoernaam":  "Facetbestand_[datum]_[tijd]",
-    "aantaldagenlogs":  30,
-    "logschonen":  "Ja",
+    "aantaldagenlogs":  "78",
+    "logschonen":  "Nee",
     "uitvoermap":  "C:\\Users\\0101925\\Documents",
     "consolesluiten":  "Ja",
     "startmap":  "C:\\Users\\0101925\\OneDrive - Zadkine\\Documenten\\WindowsPowerShell\\testen\\cetool test.250717"

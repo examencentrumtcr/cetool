@@ -1,10 +1,14 @@
 # Changelog van script Ce-tool.
 
 versie 1.0.0.alpha.250901
+- Bij show_logboek is het mogelijkheid om automatisch te legen met vinkje voor de keuze. 
+  En het aantal dagen kan je instellen. Na sluiten worden beide instellingen bewaard.
+  
 - Regels in het logboek worden nu ook verwijderd als het aantal dagen op 0 staat.
 - Function CreateOutputFileName gemaakt om een bestandsnaam te creëren a.d.h.v. ingestelde variabelen.
 - Function show-convertForm aangepast om een standaard uitvoernaam te creëren als deze leeg is en nog een controle hierop
   nadat de functie CreateOutputFileName is aangeroepen.
+  Ook wordt de standaard naam gebruikt als er niets is ingevuld.
 
 versie 1.0.0.alpha.250822
 - De vensters worden niet meer standaard boven andere vensters weergegeven. De optie Topmost is verwijderd.
