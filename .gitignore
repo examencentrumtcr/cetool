@@ -1,0 +1,6 @@
+release/
+prerelease/
+setup/
+.vscode/
+temp/
+test/
