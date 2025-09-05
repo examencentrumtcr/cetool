@@ -6,8 +6,8 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250901' # extra label voor de versie
-    mode = 'beta' # alpha, beta, prerelease of release
+    extralabel = 'alpha.250905' # extra label voor de versie
+    mode = 'alpha' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
 
@@ -1102,7 +1102,7 @@ Function Search-Update {
 
     $url = $programma.github # dit is de url van de github repository 
     if ($programma.mode -eq "release") {
-        $url = -join ($programma.github,"latest")
+        $url = -join ($programma.github,"release")
         } else {
         $url = -join ($programma.github,"prerelease")
         }
@@ -1137,7 +1137,7 @@ Function Search-Update {
                 New-Item -ItemType Directory -Path (Split-Path $localFile) -Force | Out-Null
             }
 
-            # "Bestand $($item.name) downloaden naar de map latest."
+            # "Bestand downloaden naar de map $tijdelijkepad."
             Invoke-WebRequest -Uri $item.download_url -OutFile $localFile
             
             # bepaal laatste versie van het script
