@@ -1,0 +1,45 @@
+** CHANGELOG VOOR CETOOL.PS1 **
+
+Hieronder ziet u de wijzigingen per versie:
+
+Versie 1.0.0
+- De logboek kan handmatig geleegd worden of kan worden ingesteld om bij de start van het script 
+  automatisch gebeurtenissen ouder dan de ingestelde aantal dagen te verwijderen. 
+- Automatisch updaten van het script via Github is ingesteld.
+  Beheerders kunnen ook een prerelease versie downloaden door dit in te stellen in het gebruikersbestand.
+- De uitvoermap kan ingesteld worden a.d.h.v. opgegeven variabelen.
+- Een aantal verschillende modes in het script zijn toegepast.
+	alpha      : Logbestanden verwijderen is uit, automatisch updates is uit en console blijft open.
+    	beta       : Automatisch updates is uit en console blijft open.
+    	prerelease : Er wordt gecontroleerd op prerelease updates.
+    	release    : Normale gebruik.
+- Het probleem bij het vergelijken van versies, dat de versienummers als karakters worden gezien, is opgelost.
+- Een aantal extra controles zijn toegepast in het script zodat fouten goed worden afgehandeld.
+- Een aantal persoonlijke keuzes worden bewaard om in het vervolg te gebruiken. 
+  Dit zijn: 
+	- de map waar de excel bestanden staan die ingelezen worden, 
+	- de uitvoermap waar de gecomprimeerde bestanden komen, 
+	- de naam van het uitvoer bestand, 
+	- of je automatisch het logboek wilt legen 
+	- na hoeveel dagen oud de gebeurtenissen worden verwijderd 
+	- of je de console wilt sluiten. 
+
+Versie 0.3.0
+- Het script kan een excel bestand uit Eduarte naar meerdere xml bestanden omzetten en deze als één gecomprimeerde 
+  bestand bewaren. Dit bestand kan worden ingelezen door Facet. Dit is de hoofdfunctie van het script.
+  Deze xml bestanden zijn per examen verdeeld. 
+  Studenten met een bepaalde indicatie, zoals dislexie, komen in een aparte xml bestand zodat zij 
+  extra tijd kunnen krijgen. 
+  Het script start op in een venster met drie keuzes: Start omzetten, Logboek bekijken en Afsluiten.
+  Als je start omzetten klikt kan je een excel bestand kiezen. Deze wordt ingelezen en in een venster 
+  zie je de voortgang. Vervolgens krijg je in een volgende venster een overzicht van de ingelezen data.
+  Je kan dan opnieuw een bestand kiezen of bevestigen dat de data correct is.
+  Als je de data bevestigt ga je naar de laatste venster voor het omzetten. 
+  Hier zie je een overzicht van de gemaakt keuzes en kan je nog de uitvoernaam en uitvoermap wijzigen.
+  Als je op Omzetten klikt begint het omzetten. Ook deze voortgang wordt getoond.
+  Als het script klaar is kan je het venster sluiten en kom je weer in het hoofdvenster.
+  In het logboek kan je deze gebeurtenis weer bekijken.
+  Alle gebeurtenissen worden in het logboek bewaard.
+  Als je op Afsluiten klikt wordt het script afgesloten.
+
+

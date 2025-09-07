@@ -24,6 +24,9 @@ write-host "** Programma "$programma.naam -f Green
 write-host "** Versie is "$programma.versie -f Green
 write-host ""
 write-host "Initialiseren van het programma."
+if ($programma.mode -ne "release") {
+    write-host "LET OP: Dit is een $($programma.mode) versie van het programma. Niet voor productie gebruiken!" -f Yellow
+}
 
 # toevoegen .NET framework klassen
 Add-Type -AssemblyName System.Windows.Forms
@@ -487,7 +490,7 @@ function Import-ExcelFile {
 
     Write-Host "Rij 1 bevat de header en wordt overgeslagen."
     Add-Output "Rij 1 bevat de header en wordt overgeslagen."
-    # $huidetekst wordt gebruikt om de tekst "Rij 2 van 10 wordt ingelezen"op 1 regel te houden.
+    # $huidigetekst wordt gebruikt om de tekst "Rij 2 van 10 wordt ingelezen" op 1 regel te houden.
     # dit wordt gedaan door de huidge waarde te onthouden en dan steeds alleen 1 regel toe te voegen.
     $huidigetekst = $outputBox.text
     for ($row = 2; $row -le $rowmax; $row++) {
@@ -810,11 +813,6 @@ function Show-ConvertForm {
         # en alleen outputbox zichtbaar
         $outputBox.Visible = $true
         
-        # testen
-        # $test = $Exceldata.uitvoernaam
-        $test = $txtOutput.Text
-        [System.Windows.Forms.MessageBox]::Show("Uitvoernaam is $test", "Info", "OK", "Information")
-
         # Controleer of uitvoernaam is ingevuld
         if ([string]::IsNullOrWhiteSpace($Exceldata.uitvoernaam)) {
             [System.Windows.Forms.MessageBox]::Show("Geef een uitvoernaam. Deze mag niet leeg zijn.", "Foutmelding", "OK", "Error")
@@ -858,9 +856,8 @@ function Show-ConvertForm {
         $convertForm.Text = "KLAAR! Data is omgezet naar Facet formaat."
         # de knop om te sluiten is weer klikbaar en tekst is veranderd
         $btnBack.Text = "Sluiten"
-        # $btnBack.Location = '10,220'
         $btnBack.Visible = $true
-
+        
     })
     $convertForm.Controls.Add($btnNext)
 
@@ -1402,7 +1399,7 @@ SaveSettings $gebruiker
 Remove_Logevents
 
 # De gebruiker de tijd te geven om de tekst te lezen.
-# Start-Sleep -Seconds 3
+Start-Sleep -Seconds 3
 
 # Verbergen van de console venster 
 Hide-ConsoleWindow;

@@ -1,22 +1,45 @@
 <# Centraal Examen tool om een excelbestand van Eduarte om te zetten naar een voor Facet geschikt format.
-   Deze tool is gemaakt door Benvindo Neves
+   Deze tool is gemaakt door Benvindo Neves.
+   Alle rechten voorbehouden.
 #>
 
 $programma = @{
-    versie = '1.0.0'
-    extralabel = 'update.250723'
-    mode = 'alpha' # alpha, beta, prerelease, release, update
+    naam = 'cetool' # naam van het programma
+    versie = '1.0.0' # versie van het programma
+    extralabel = 'testupdate.250905' # extra label voor de versie
+    mode = 'prerelease' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
-    github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/latest"
+    github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
+
+    <# Uitleg verschillende modes :
+    alpha      : Logbestanden verwijderen is uit, Automatisch updates is uit en Console blijft open
+    beta       : Automatisch updates is uit en Console blijft open
+    prerelease : Wordt gebruikt om alles te testen. Er wordt gecontroleerd op prerelease updates.
+    release    : Normale gebruik
+    #>
 }
+
+write-host ""
+write-host "** Programma "$programma.naam -f Green
+write-host "** Versie is "$programma.versie -f Green
+write-host ""
+write-host "Initialiseren van het programma."
 
 # toevoegen .NET framework klassen
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+# Functie om de console window te verbergen begint hier met de declaratie van de API.
+$code = '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);'
+$ShowWindowAsync = Add-Type -MemberDefinition $code -Name myAPI -PassThru
+$hwnd = (Get-Process -PID $pid).MainWindowHandle
+
 # Bestand waarin alle uitgevoerde stappen worden bijgehouden.
 $LogFile = "$PSScriptRoot\script_log.txt"
+
+# Bepalen van het bestand met gebruikersinstellingen.
+$gebruikersbestand = "$PSScriptRoot\gebruikersinstellingen.json"
 
 # De ingelezen data uit het excelbestand
 $Exceldata = [PSCustomObject]@{
@@ -31,18 +54,143 @@ $Exceldata = [PSCustomObject]@{
         vakcodes = ""
     }
 
+# gebruikersinstellingen worden opgeslagen in een hash tabel
+# en kunnen worden aangepast door de gebruiker.
+# Deze worden opgeslagen in een json bestand.
+# De standaard instellingen worden in de functie gebruikersinstellingen gedeclareerd.
+$gebruiker = @{}
+
+function gebruikersinstellingen {
+# hier worden de standaardinstellingen gedeclareerd die gebruikers kunnen wijzigen
+$Std_inst=@{
+    startmap  = ""        # standaard map waar de gebruiker het script start
+    uitvoermap = ""       # standaard map waar de gebruiker de uitvoer plaatst
+    uitvoernaam = ""      # standaard naam voor de uitvoer
+    aantaldagenlogs = 30  # aantal dagen dat de gebeurtenissen in het logboek worden bewaard
+    logschonen = 'Ja'     # automatisch de gebeurtenissen in het logboek opschonen
+    consolesluiten = 'Ja' # sluiten van de console window na het uitvoeren van het script
+    }
+return $Std_inst
+} # einde gebruikersinstellingen
+
+Function StandardInOutputDirectory {
+# Standaard in- en uitvoer voor de applicatie
+[string]$std_inoutput = [Environment]::GetFolderPath("MyDocuments")
+return $std_inoutput
+}
+
+Function StandardOutputFileName {
+# Standaard uitvoernaam voor het omgezette bestand
+[string]$std_outputname = "Facetbestand_[datum]_[tijd]"
+return $std_outputname
+}
+
+Function CreateOutputFileName {
+param (
+    [Parameter(Mandatory = $false)] [string]$invoer
+)
+
+# Deze functie maakt een uitvoernaam aan op basis van de ingestelde uitvoernaam met variabelen
+# De volgende variabelen kunnen worden gebruikt in de uitvoernaam:
+# [jaar]      : huidig jaar (4 cijfers)
+# [maand]     : huidige maand (2 cijfers)
+# [dag]       : huidige dag (2 cijfers)
+# [datum]     : huidige datum (6 cijfers, formaat yyMMdd)
+# [tijd]      : huidige tijd (6 cijfers, formaat HHmmss)
+# [uren]     : huidige uren (2 cijfers, formaat HH)
+# [minuten]   : huidige minuten (2 cijfers, formaat mm)
+# [seconden]  : huidige seconden (2 cijfers, formaat ss)
+# [gebruiker] : naam van de huidige gebruiker
+# [computer]  : naam van de huidige computer
+# Als een niet herkende variabele wordt gebruikt, dan wordt deze zonder de haakjes weergegeven.
+# voorbeeld: "Facetbestand_[datum]_[tijd]_[gebruiker]" wordt "Facetbestand_240901_153045_bneves"
+
+# Als de invoer leeg is, dan de standaard naam gebruiken
+if ($invoer -eq "") {
+    $invoer = StandardOutputFileName
+    Write-Host "De standaard uitvoernaam wordt gebruikt: $invoer"
+}
+
+$uitvoer = $invoer
+do {
+    $gevonden = $uitvoer.IndexOf('[')
+    if ($gevonden -ge 0) {
+        # eerste gevonden
+        $gevonden2 = $uitvoer.IndexOf(']') 
+        if ($gevonden2 -ge 0) {
+            # het gevonden woord die automatisch wordt ingevuld
+            $woord = $uitvoer.Substring($gevonden,$gevonden2-$gevonden+1)
+            # afhankelijk van het woord, de nieuwe waarde ophalen
+            switch ($woord) {
+                "[jaar]" {
+                $nieuw = get-date -Format "yyyy"
+                         }
+                "[maand]" {
+                $nieuw = get-date -Format "MM"
+                         }
+                "[dag]" {
+                $nieuw = get-date -Format "dd"
+                         }
+                "[datum]" {
+                $nieuw = get-date -Format "yyMMdd"
+                         }
+                "[tijd]" {
+                $nieuw = get-date -Format "HHmmss"
+                         }
+                "[minuten]" {
+                $nieuw = get-date -Format "mm"
+                         }
+                "[uren]" {
+                $nieuw = get-date -Format "HH"
+                         }
+                "[seconden]" {
+                $nieuw = get-date -Format "ss"
+                         }
+                "[gebruiker]" {
+                $nieuw = $env:USERNAME
+                         }
+                "[computer]" {
+                $nieuw = $env:ComputerNAME
+                         }
+                default {
+                # het woord tussen de haakjes is niet herkend en wordt terug gegeven zonder de haakjes.
+                $nieuw = $woord.Substring(1,$woord.length-2)
+                }
+            } # einde switch
+            # Het gevonden woord wordt vervangen door wat het representeert.
+            $uitvoer = $uitvoer.Replace($woord,$nieuw)
+
+        } else {
+        # als de eerste teken [ is gevonden maar de 2e teken ] niet, dan stoppen. dus moet gevonden naar -1
+        $gevonden = -1
+        }
+    }
+} while ($gevonden -ge 0)
+
+return $uitvoer
+} # einde CreateOutputFileName
+
 Function Empty_Exceldata {
 # Leeg maken van array en standaard waarden geven
 $Exceldata.aantal = 0
 $Exceldata.inhoud = @()
 $Exceldata.geselecteert = ""
-$Exceldata.uitvoermap = [Environment]::GetFolderPath('MyDocuments')
-$Exceldata.uitvoernaam = "Facetbestand_" + (Get-Date -Format "yyyyMMdd_HHmmss") # standaard uitvoernaam
+
+if ($gebruiker.uitvoermap -eq "") {
+    $Exceldata.uitvoermap = StandardInOutputDirectory # standaard uitvoermap
+} else {
+    $Exceldata.uitvoermap = $gebruiker.uitvoermap
+}
+if ($gebruiker.uitvoernaam -eq "") {
+    $Exceldata.uitvoernaam = StandardOutputFileName # standaard uitvoernaam
+} else {
+    $Exceldata.uitvoernaam = $gebruiker.uitvoernaam
+}
 $Exceldata.brinnummers = ""
 $Exceldata.groepsidnrs = ""
 $Exceldata.examendagen = ""
 $Exceldata.vakcodes = ""
-}
+} # einde Empty_Exceldata
 
 Function declareren_standaardvenster {
 param (
@@ -55,7 +203,7 @@ $StandaardForm                            = New-Object system.Windows.Forms.Form
 $StandaardForm.MaximumSize = New-Object System.Drawing.size($size_x,$size_y)
 $StandaardForm.MinimumSize = New-Object System.Drawing.size($size_x,$size_y)
 $StandaardForm.text                       = $titel
-$StandaardForm.TopMost                    = $true
+# $StandaardForm.TopMost                    = $true
 $StandaardForm.StartPosition              = 'CenterScreen'
 # $StandaardForm.BackColor = "white"
 $StandaardForm.MaximizeBox = $False
@@ -91,10 +239,11 @@ function Write-Log {
     
 
     # oude inhoud inlezen, toevoegen aan tijdelijke bestand en oude bestand verwijderen
-    $inhoudlog = Get-Content -path $LogFile
-    Add-Content -Path $tijdelijkelog -Value $inhoudlog
-    Remove-Item $LogFile
-
+    if (Test-Path $LogFile) {
+        $inhoudlog = Get-Content -path $LogFile
+        Add-Content -Path $tijdelijkelog -Value $inhoudlog
+        Remove-Item $LogFile
+    } 
     # naam wijzigen naar oude bestand
     Rename-Item -Path $tijdelijkelog -NewName $LogFile
     
@@ -109,12 +258,95 @@ function Get-PNGImage {
     }
 } # einde Get-PNGImage
 
+Function ReadSettings {
+
+# standaard instellingen bepalen voor object $init
+$init = gebruikersinstellingen
+
+# inlezen initialisatiebestand als deze bestaat en toevoegen of verwijderen waarden van $init
+# dit is nodig zodat, als de initialisatiebestand wordt ingelezen, eventuele nieuwe variabelen worden behouden en verwijderde variabelen niet worden toegevoegd. 
+if (test-path -path $gebruikersbestand -pathtype leaf) { 
+
+    # try-catch om te voorkomen dat het bestand niet goed wordt ingelezen.
+    try {
+        # inlezen van object als hashwaarden. hier staan de standaard waarden in die je wil behouden.
+        $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
+    } catch {
+        # foutmelding geven en terugkeren naar init
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het inlezen van het gebruikersinstellingen bestand: $gebruikersbestand"
+        Write-Host "Fout bij het inlezen van het gebruikersinstellingen bestand: $gebruikersbestand"
+        return $init
+    }
+   
+    # waarden overzetten naar $init. nieuwe waarden worden behouden. verwijderde waarden worden niet toegevoegd.
+    foreach( $property in $myobject.psobject.properties.name ) {
+ 
+        # alleen toevoegen als deze bij 'init' al bestaat
+        if ( $null -ne $init.$property ) { 
+            $init[$property] = $myObject.$property
+            }
+
+        } # einde foreach $property - loop    
+
+    # gekozen is om dit altijd te bewaren zodat je lijst met variabelen up to date is.
+    # $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+    } 
+
+    return $init
+
+} # einde ReadSettings
+
+function SaveSettings {
+    param(
+        [Parameter(Mandatory = $true)] [hashtable]$init
+    )
+
+    <# Onderstaand is door ChatGpt gegenereerd. Nog niet getest.
+    
+    inlezen van het huidige gebruikersinstellingen bestand
+    if (test-path -path $gebruikersbestand -pathtype leaf) { 
+        $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
+    } else {
+        $myObject = @{}
+    }
+
+    # waarden overzetten naar $myObject. nieuwe waarden worden toegevoegd. verwijderde waarden worden niet toegevoegd.
+    foreach( $property in $init.psobject.properties.name ) {
+        foreach( $subproperty in $init.$property.psobject.properties.name )
+        {
+            $myObject[$property][$subproperty] = $init.$property.$subproperty 
+        } # einde foreach $subproperty - loop 
+    } # einde foreach $property - loop    
+    #>
+
+    # schrijven naar bestand
+    # $myObject | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+
+    # TRY-CATCH om te voorkomen dat het bestand niet goed wordt weggeschreven.
+    try {
+        # Zet de inhoud van $init om naar JSON en schrijf het naar het gebruikersbestand
+        $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
+    } catch {
+        # foutmelding geven en terugkeren naar init
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het wegschrijven van het gebruikersinstellingen bestand: $gebruikersbestand"
+        Write-Host "Fout bij het wegschrijven van het gebruikersinstellingen bestand: $gebruikersbestand"
+        return
+    }
+
+} # einde SaveSettings
 function SelectExcelForm {
     # Deze functie toont een dialoogvenster om een Excelbestand te selecteren
     # en retourneert het pad naar het geselecteerde bestand of 'GEEN' als er geen bestand is geselecteerd.
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = "Excel bestanden (*.xlsx)|*.xlsx"
     $dialog.Title = "Kies een Excelbestand"
+    if ($gebruiker.startmap -eq "") {
+        $dialog.InitialDirectory = StandardInOutputDirectory # standaard zoekmap voor Excelbestanden
+    } else {
+        $dialog.InitialDirectory = $gebruiker.startmap # standaard map is de map waar het script staat
+    }
 
     if ($dialog.ShowDialog() -eq "OK") {
         $selectedFile = $dialog.FileName
@@ -126,7 +358,7 @@ return $selectedFile
 
 function Show-Logboek {
     
-    $logForm = declareren_standaardvenster -titel "Logboek" -size_x 900 -size_y 400
+    $logForm = declareren_standaardvenster -titel "Logboek" -size_x 900 -size_y 450
 
     $txtLog = New-Object System.Windows.Forms.TextBox
     #$txtLog.Dock = "Fill"
@@ -150,19 +382,73 @@ function Show-Logboek {
         $txtLog.Text = "Logboek is leeg."
         }
 
+    $autologsverwijderen = New-Object System.Windows.Forms.Checkbox 
+    $autologsverwijderen.Location = New-Object System.Drawing.Point(10, 320)
+    $autologsverwijderen.Size = New-Object System.Drawing.Size(555,30)
+    $autologsverwijderen.Text = "Gebeurtenissen in het logboek automatisch legen na de volgende aantal dagen"
+    if ($gebruiker.logschonen -eq "Ja") {
+        $autologsverwijderen.Checked = $true
+    } else {
+        $autologsverwijderen.Checked = $false
+    }
+    # $standaarduitvoermap.checked = $true
+    $logForm.Controls.Add($autologsverwijderen)
+
+    $aantaldagenlogs = New-Object System.Windows.Forms.TextBox 
+    $aantaldagenlogs.Location = New-Object System.Drawing.Size(570,322) 
+    $aantaldagenlogs.Size = New-Object System.Drawing.Size(55,50)
+    $aantaldagenlogs.MaxLength = 4
+    $aantaldagenlogs.Font = 'Microsoft Sans Serif,11'
+    $aantaldagenlogs.Text=$gebruiker.aantaldagenlogs
+    $aantaldagenlogs.Add_TextChanged({
+        $this.Text = $this.Text -replace '\D'
+    })
+    $logForm.Controls.Add($aantaldagenlogs)
+
     # Voeg een sluitknop toe
     $btnClose = New-Object System.Windows.Forms.Button
     $btnClose.Text = "Terug"
     # $btnClose.Dock = "Bottom"
-    $btnClose.location = "50,320" 
+    $btnClose.location = "50,370" 
     $btnClose.size = "150,30"
     $btnClose.BackColor = "White"
     $btnClose.DialogResult = [System.Windows.Forms.DialogResult]::cancel
     $logForm.Controls.Add($btnClose)
-       
-    $null = $logForm.ShowDialog()
-} # einde Show-Logboek
+    
+    # Voeg een knop toe om het logboek te wissen
+    $btnClear = New-Object System.Windows.Forms.Button
+    $btnClear.Text = "Logboek wissen"
+    $btnClear.Location = "210,370"
+    $btnClear.Size = "150,30"
+    $btnClear.BackColor = "White"
+    $btnClear.Add_Click({
+        # Controleer of het logbestand bestaat 
+        if (Test-Path $LogFile) {
+            # Leegmaken en opnieuw schrijven naar het logbestand
+            Set-Content -Path $LogFile -Value ""
+            Write-Log -Message "Logboek is handmatig gewist."
+            $txtLog.Text = Get-Content -Path $LogFile -Raw
+        }
+    })
+    $logForm.Controls.Add($btnClear)
 
+    $null = $logForm.ShowDialog()
+
+    # keuze automatisch opschonen opslaan
+    if ($autologsverwijderen.Checked) {
+        $gebruiker.logschonen = "Ja"
+    } else {
+        $gebruiker.logschonen = "Nee"
+    }
+    # keuze aantal dagen opslaan
+    # als de leeg is, dan 30 dagen gebruiken
+    if ($aantaldagenlogs.Text -eq "") {
+        $aantaldagenlogs.Text = 30
+    }
+    $gebruiker.aantaldagenlogs = $aantaldagenlogs.Text
+    SaveSettings -init $gebruiker
+
+} # einde Show-Logboek
 
 function Add-Output {
     param([string]$text)
@@ -273,7 +559,7 @@ function Import-ExcelFile {
     $Exceldata.geselecteert = $ExcelPath
     $Exceldata.inhoud = $data
     $Exceldata.aantal = $rowmax - 1 # aantal rijen minus de header
-    # De gevonden brinnummers in de array zetten
+    # De gevonden data in de array zetten
     # Met Sort-object -Property Values wordt alles op alfabetisch volgorde gezet
     # met `r`n`t de regels onder elkaar en een tab naar rechts
     $brinnrs = $data | Group-Object -Property MapNaam | Sort-object -Property Values
@@ -384,52 +670,101 @@ function Show-ExcelForm {
 function Show-ConvertForm {
     # param([array]$Exceldata)
 
-    $convertForm = declareren_standaardvenster -titel "Overzicht en opties wijzigen" -size_x 600 -size_y 300
+    $convertForm = declareren_standaardvenster -titel "Overzicht en opties wijzigen" -size_x 600 -size_y 380
 
-    # geselecteerde Exceldata uit array halen
+    # geselecteerde Exceldata uit array halen. Dit maakt het weergeven van de info overzichtelijker.
+    # Selectedlocation wordt ook gebruikt om de standaard zoekmap in te stellen.
     $SelectedFile = Split-Path -Path $Exceldata.geselecteert -Leaf
+    $Selectedlocation = Split-Path -Path $Exceldata.geselecteert -Parent
     $outputname = $Exceldata.uitvoernaam
     $outputFolder = $Exceldata.uitvoermap
 
     $lblSelected = New-Object System.Windows.Forms.Label
     $lblSelected.Text = "Gekozen bestand: $SelectedFile"
-    $lblSelected.Location = '10,20'
-    $lblSelected.Size = '590,30'
+    $lblSelected.Location = '10,10'
+    $lblSelected.Size = '590,20'
     $convertForm.Controls.Add($lblSelected)
+
+    $lbllocation = New-Object System.Windows.Forms.Label
+    $lbllocation.Text = "Locatie: $Selectedlocation"
+    $lbllocation.Location = '60,30'
+    $lbllocation.Size = '540,40'
+    $convertForm.Controls.Add($lbllocation)
+
+    $standaardzoekmap = New-Object System.Windows.Forms.Checkbox 
+    $standaardzoekmap.Location = New-Object System.Drawing.Point(60, 70)
+    $standaardzoekmap.Size = New-Object System.Drawing.Size(540,30)
+    $standaardzoekmap.Text = "Deze locatie gebruiken als standaard zoekmap voor Excelbestanden."
+    if ($gebruiker.startmap -eq "") {
+        $standaardzoekmap.Checked = $true
+    } else {
+        $standaardzoekmap.Checked = $false
+    }
+    # $standaardzoekmap.checked = $true
+    $convertForm.Controls.Add($standaardzoekmap)
 
     $lblPath = New-Object System.Windows.Forms.Label
     $lblPath.Text = "Uitvoermap:"
-    $lblPath.Location = '10,70'
-    $lblPath.Size = '250,20'
+    $lblPath.Location = '10,110'
+    $lblPath.Size = '90,30'
     $convertForm.Controls.Add($lblPath)
 
     $OutputPath = New-Object System.Windows.Forms.Label
     $OutputPath.Text = "$outputFolder"
-    $OutputPath.Location = '10,90'
+    $OutputPath.Location = '100,110'
     $OutputPath.Size = '590,40'
     $convertForm.Controls.Add($OutputPath)
 
+    $standaarduitvoermap = New-Object System.Windows.Forms.Checkbox 
+    $standaarduitvoermap.Location = New-Object System.Drawing.Point(60, 150)
+    $standaarduitvoermap.Size = New-Object System.Drawing.Size(540,30)
+    $standaarduitvoermap.Text = "Deze uitvoermap gebruiken als standaard uitvoermap."
+    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
+    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
+    if ($gebruiker.uitvoermap -eq "") {
+        $standaarduitvoermap.Checked = $true
+    } else {
+        $standaarduitvoermap.Checked = $false
+    }
+    # $standaarduitvoermap.checked = $true
+    $convertForm.Controls.Add($standaarduitvoermap)
+
     $lblOutput = New-Object System.Windows.Forms.Label
     $lblOutput.Text = "Uitvoernaam:"
-    $lblOutput.Location = '10,130'
+    $lblOutput.Location = '10,190'
     $lblOutput.Size = '100,20'
     $convertForm.Controls.Add($lblOutput)
 
     $txtOutput = New-Object System.Windows.Forms.TextBox
-    $txtOutput.Location = '10,150'
+    $txtOutput.Location = '120,190'
     $txtOutput.Size = '300,20'
     $txtOutput.Text = $outputname
     $convertForm.Controls.Add($txtOutput)
 
+    $standaarduitvoernaam = New-Object System.Windows.Forms.Checkbox 
+    $standaarduitvoernaam.Location = New-Object System.Drawing.Point(60, 210)
+    $standaarduitvoernaam.Size = New-Object System.Drawing.Size(540,50)
+    $standaarduitvoernaam.Text = "Deze format gebruiken als standaard naam voor het omgezette bestand."
+    # $wissennabackup.Font = 'Microsoft Sans Serif,11'
+    # $wissennabackup.ForeColor = [System.Drawing.Color]::green
+    if ($gebruiker.uitvoernaam -eq "") {
+        $standaarduitvoernaam.Checked = $true
+    } else {
+        $standaarduitvoernaam.Checked = $false
+    }
+    # $standaarduitvoernaam.checked = $true
+    $convertForm.Controls.Add($standaarduitvoernaam)
+
     $btnSelect = New-Object System.Windows.Forms.Button
     $btnSelect.Text = "Wijzig uitvoermap"
-    $btnSelect.Location = '380,60'
+    $btnSelect.Location = '380,300'
     $btnSelect.Size = '200,30'
     $btnSelect.BackColor = "White"
     $btnSelect.Add_Click({
         # Outputmap selecteren
         $FolderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         $FolderBrowser.Description = "Selecteer de uitvoermap"
+        # $FolderBrowser.RootFolder = [System.Environment+SpecialFolder]::MyDocuments
 
         if ($FolderBrowser.ShowDialog() -eq "OK") {
                 $outputFolder = $FolderBrowser.SelectedPath
@@ -441,7 +776,7 @@ function Show-ConvertForm {
 
     $btnBack = New-Object System.Windows.Forms.Button
     $btnBack.Text = "Stoppen"
-    $btnBack.Location = '10,190'
+    $btnBack.Location = '10,300'
     $btnBack.Size = '150,30'
     $btnBack.BackColor = "White"
     $btnBack.DialogResult = [System.Windows.Forms.DialogResult]::cancel
@@ -449,50 +784,81 @@ function Show-ConvertForm {
 
     $btnNext = New-Object System.Windows.Forms.Button
     $btnNext.Text = "Omzetten"
-    $btnNext.Location = '180,190'
+    $btnNext.Location = '180,300'
     $btnNext.Size = '150,30'
     $btnNext.BackColor = "White"
     # $btnNext.DialogResult = [System.Windows.Forms.DialogResult]::ok
     $btnNext.Add_Click({
-        # Controleer of uitvoernaam is ingevuld
-        if ([string]::IsNullOrWhiteSpace($txtOutput.Text)) {
-            [System.Windows.Forms.MessageBox]::Show("Voer een uitvoernaam in.", "Foutmelding", "OK", "Error")
-            return
-        }
+        
         # Controleer of uitvoermap is ingevuld
         if ([string]::IsNullOrWhiteSpace($OutputPath.Text)) {
             [System.Windows.Forms.MessageBox]::Show("Selecteer een uitvoermap.", "Foutmelding", "OK", "Error")
             return
         }
+
+        # Als er geen uitvoernaam is ingevuld dan de standaard naam gebruiken en deze bewaren.
+        if ([string]::IsNullOrWhiteSpace($txtOutput.Text)) {
+            $txtOutput.Text = StandardOutputFileName
+            $gebruiker.uitvoernaam = $txtOutput.Text
+        }
+
         # In de titel aangeven dat de data wordt omgezet
         $convertForm.Text = "Data wordt omgezet naar Facet formaat..."
         # Data weer in array zetten en naar procedure voor het omzetten
-        $Exceldata.uitvoernaam = $txtOutput.Text
+        $Exceldata.uitvoernaam = CreateOutputFileName -invoer $txtOutput.Text
         $Exceldata.uitvoermap = $OutputPath.Text
         # en alleen outputbox zichtbaar
         $outputBox.Visible = $true
         
+        # testen
+        # $test = $Exceldata.uitvoernaam
+        $test = $txtOutput.Text
+        [System.Windows.Forms.MessageBox]::Show("Uitvoernaam is $test", "Info", "OK", "Information")
+
+        # Controleer of uitvoernaam is ingevuld
+        if ([string]::IsNullOrWhiteSpace($Exceldata.uitvoernaam)) {
+            [System.Windows.Forms.MessageBox]::Show("Geef een uitvoernaam. Deze mag niet leeg zijn.", "Foutmelding", "OK", "Error")
+            return
+        }
         # de knop om te sluiten is even niet klikbaar
-        
         # alle andere knoppen en text onzichtbaar maken
         $btnBack.Visible = $false
         $btnSelect.Visible = $false
         $btnNext.Visible = $false
         $lblSelected.Visible = $false
+        $lbllocation.Visible = $false
         $lblPath.Visible = $false
         $lblOutput.Visible = $false
         $txtOutput.Visible = $false
         $OutputPath.Visible = $false
+        $standaardzoekmap.Visible = $false
+        $standaarduitvoermap.Visible = $false
+        $standaarduitvoernaam.Visible = $false
         # tijd geven om dit uit te voeren
         Start-Sleep -Milliseconds 100
 
+        # als de gebruiker heeft gekozen om de standaard zoekmap te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaardzoekmap.Checked) {
+            $gebruiker.startmap = $Selectedlocation
+        }
+        # als de gebruiker heeft gekozen om de standaard uitvoermap te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaarduitvoermap.Checked) {
+            $gebruiker.uitvoermap = $OutputPath.Text
+        }
+        # als de gebruiker heeft gekozen om de standaard uitvoernaam te gebruiken, dan deze waarde in de gebruiker hash tabel zetten
+        if ($standaarduitvoernaam.Checked) {
+            $gebruiker.uitvoernaam = $txtOutput.Text
+        }
+        # de instellingen opslaan in het gebruikersbestand
+        SaveSettings $gebruiker
+    
         # Starten omzetten
         Convert-ExcelToFacet
         # in de titel aangeven dat de data is omgezet
         $convertForm.Text = "KLAAR! Data is omgezet naar Facet formaat."
         # de knop om te sluiten is weer klikbaar en tekst is veranderd
         $btnBack.Text = "Sluiten"
-        $btnBack.Location = '10,220'
+        # $btnBack.Location = '10,220'
         $btnBack.Visible = $true
 
     })
@@ -502,8 +868,8 @@ function Show-ConvertForm {
     $outputBox = New-Object System.Windows.Forms.TextBox
     $outputBox.Multiline = $true
     $outputBox.ScrollBars = "Vertical"
-    $outputBox.Size = New-Object System.Drawing.Size(560, 200)
-    $outputBox.Location = New-Object System.Drawing.Point(10, 10)
+    $outputBox.Size = New-Object System.Drawing.Size(560, 280)
+    $outputBox.Location = New-Object System.Drawing.Point(10, 5)
     $outputBox.ReadOnly = $true
     $outputBox.Visible = $false # niet zichtbaar in het begin
     $convertForm.Controls.Add($outputBox)
@@ -698,7 +1064,7 @@ function New-XmlFile {
     $root.AppendChild($afnamegroep) | Out-Null
 
     $xmlDoc.Save($OutputPath)
-}
+} # einde New-XmlFile
 
 function Compress-Folder {
     # Hier wordt een zipbestand gemaakt adhv de 2 gegeven bestanden
@@ -711,50 +1077,67 @@ function Compress-Folder {
     [System.IO.Compression.ZipFile]::CreateFromDirectory($FolderPath, $ZipFilePath)
 }
 
-Function Controleerupdate {
+Function Search-Update {
     # Controleer of er een update is voor dit script
-    Write-Host "Controleer op updates."
 
-       # Declareren venster met standaard waarden
-    $ControleerupdateForm = declareren_standaardvenster -titel "Controleren op een update." -size_x 600 -size_y 300
+    $tijdelijkepad = "$PSScriptRoot\update_files\" # dit is de tijdelijke map waar de update-bestanden worden opgeslagen
+    # Als de tijdelijke map bestaat wordt deze geleegd en de update niet uitgevoerd.
+    if (Test-Path $tijdelijkepad) {
+        write-host "Er is net een update uitgevoerd. De tijdelijke map wordt geleegd."
+        Remove-Item $tijdelijkepad -Recurse -Force
+        return
+    }
 
-    # TextBox voor statusoutput
-    $outputBox = New-Object System.Windows.Forms.TextBox
-    $outputBox.Multiline = $true
-    $outputBox.ScrollBars = "Vertical"
-    $outputBox.Size = New-Object System.Drawing.Size(560, 200)
-    $outputBox.Location = New-Object System.Drawing.Point(10, 5)
-    $outputBox.ReadOnly = $true
-    $ControleerupdateForm.Controls.Add($outputBox)
+    # alleen starten als programma.mode niet de status alpha of beta heeft.
+    # De tekst die wordt weergegeven is er alleen ter informatie en controle.
+    if ("alpha","beta" -contains($programma.mode)) {
+        Write-Host "Er is geen update beschikbaar voor dit script in de alpha of beta versie."
+        return
+    }
 
-    $ControleerupdateForm.Show()
-    # nodig om proces de tijd te geven om de tekst te laten zien.
-    Start-Sleep -Milliseconds 500  
+    Write-Host "Controleren op een update."
 
-    # Vanaf hier start de controle op een update
-    Add-Output "Controleer op een update van dit script."
-
-    $tijdelijkepad = "$PSScriptRoot\temp\" # dit is de tijdelijke map waar de bestanden worden opgeslagen
-    $updateto = "0.0.0" # standaard waarde. Als er geen update is, dan blijft deze waarde 0.0.0
+    $updateto = "0.0.0" # standaard waarde. Als er geen update is gevonden, dan blijft deze waarde 0.0.0. Let op, dit betekent dat er een probleem is met de update.
     $huidigeversie = $programma.versie # huidige versie van het programma
 
     $url = $programma.github # dit is de url van de github repository 
-    # inhoud van een map in github ophalen
-    $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
-    
+    if ($programma.mode -eq "release") {
+        $url = -join ($programma.github,"release")
+        } else {
+        $url = -join ($programma.github,"prerelease")
+        }
+
+    # inhoud van de map in github ophalen
+    try {
+        $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
+    } catch {
+        Write-Host "Fout bij het ophalen van de inhoud van de GitHub repository: $url" -f Red
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Fout bij het ophalen van de inhoud van de GitHub repository: $url"
+        return
+    }
+       
     # Loop door de items in de response en controleer of er een nieuw bestand is
     foreach ($item in $response) {
         
         if ($item.type -eq "file") {
             # Download het bestand
 
+            # controleer of de naam van het item begint met "cetool_" en eindigt op ".zip"
+            if (!($item.name -like "cetool_*.zip")) {
+                continue # als de naam niet voldoet, dan overslaan
+            }   
+            # controleer of een versie in de naam zit
+            if (!($item.name -match "_\d+\.\d+\.\d+\.zip$")) {
+                continue # als de naam niet voldoet, dan overslaan
+            }
             $localFile = -join ($tijdelijkepad,$item.name)
             if (!(Test-Path $localFile)) {
                 # Maak de map aan als deze nog niet bestaat
                 New-Item -ItemType Directory -Path (Split-Path $localFile) -Force | Out-Null
             }
 
-            # "Bestand $($item.name) downloaden naar de map latest."
+            # "Bestand downloaden naar de map $tijdelijkepad."
             Invoke-WebRequest -Uri $item.download_url -OutFile $localFile
             
             # bepaal laatste versie van het script
@@ -772,71 +1155,171 @@ Function Controleerupdate {
     }
 
     if ($updateto -eq "0.0.0") {
-        Add-Output "Er is geen update gevonden in de GitHub repository: $url"
+        Write-Host "Er is geen update gevonden in de GitHub repository: $url" -f Red
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Er is geen update gevonden in de GitHub repository: $url"
         } elseif ($huidigeversie -ge $updateto) {
-        Add-Output "Het programma heeft de laatste update."
+        Write-Host "Het script heeft de laatste update."
         } else {
-        Add-Output "Er is een update beschikbaar voor dit script."
-    
-        Add-Output "De huidige versie is $huidigeversie en de laatste versie is $updateto."
-        Add-Output "Het script wordt nu bijgewerkt."    
-        
-        # Nu het script updaten via de function Updateuitvoeren
-        Updateuitvoeren $gedownloadebestand
+        Write-Host "Er is een update beschikbaar voor dit script."
+        Write-Host "Het script wordt bijgewerkt naar versie $updateto." 
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Het script wordt bijgewerkt naar versie $updateto."
+
+        # Nu het script updaten via de function Update-Script en dit loggen.
+        Update-Script $gedownloadebestand
         }
  
-    # Wacht tot de gebruiker op OK klikt. Dit staat hier tijdelijk en moet later worden verwijderd.
-    # Pause
-
-    # tijdelijkemap legen
+     # tijdelijkemap legen
     if (Test-Path $tijdelijkepad) {
         Remove-Item $tijdelijkepad -Recurse -Force
     }
     
+} # einde Search-Update
 
-    # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $ControleerupdateForm.dispose()
-} # einde Controleerupdate
-
-Function Updateuitvoeren {
-    # Deze functie moet de bestanden downloaden en de inhoud van het script vervangen.
-    # Deze functie wordt aangeroepen vanuit Controleerupdate.
+Function Update-Script {
+    # Deze functie moet de bestanden van Github downloaden en de inhoud van het script vervangen.
+    # Deze functie wordt aangeroepen vanuit Search-Update.
     param (
         [string]$updateto
     )
     
     $startmap = "$PSScriptRoot" # dit is de map waar de bestanden worden uitgepakt
-    Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
 
-    # Nu het script opnieuw starten
-    Write-Host "Het script wordt opnieuw gestart."
-    Add-Output "Het script wordt opnieuw gestart."
-    # Start het nieuwe script met powerhell
-    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
-    # Start-Process -FilePath $PSScriptRoot\CE-tool-omzetten-Excel.ps1 -WorkingDirectory $PSScriptRoot -NoNewWindow
-    # Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $PSScriptRoot\latest\cetool.ps1" -WorkingDirectory $PSScriptRoot -NoNewWindow
-    # Sluit het huidige script af
-    # Stop-Process -Id $PID -Force
-    # Dit zorgt ervoor dat het huidige script wordt afgesloten en het nieuwe script wordt gestart.
-    # Dit is nodig omdat het script opnieuw wordt gestart na de update.
-
-       # tijdelijkemap legen
-    if (Test-Path $tijdelijkepad) {
-        Remove-Item $tijdelijkepad -Recurse -Force
+    # met een  try-catch blok controleren of Expand-Archive is gelukt.
+    try {
+        # Uitpakken van het zipbestand naar de map waar het script staat.
+        Expand-Archive -Path "$updateto" -DestinationPath "$startmap" -Force
+    } catch {
+        Write-Host "Fout bij het uitpakken van het zipbestand: $updateto" -ForegroundColor Red
+        Write-Log -Message "Fout bij het uitpakken van het zipbestand: $updateto"
+        return
     }
-    
+
+    # Let op dat de tijdelijke map niet meer wordt geleegd. Zie functie Search-Update.
+
+    # In logbestand en console een bericht zetten dat het script is bijgewerkt.
+    Write-Log -Message "De update is uitgevoerd."
+    Write-Host "De update is uitgevoerd." -ForegroundColor Green
+    Write-Host "Het script wordt opnieuw gestart."
+
+    # Even wachten tot de bestanden zijn uitgepakt en de gebruker de tijd heeft om de tekst te lezen.    
     Start-Sleep -Seconds 5
-
-    # sluiten van venster. Dit moet na het downloaden van de bestanden.
-    $ControleerupdateForm.dispose()
-
     # Nu het nieuwe script starten
     powershell -file "$PSScriptRoot\cetool.ps1"
 
     # beëindigen van programma als updaten is uitgevoerd. Anders kan je na een update niet afsluiten.
     exit;
+} # einde Update-Script
+
+# Deze functie verbergt de console window van PowerShell
+function Hide-ConsoleWindow() {
+
+# als dit bij $gebruiker is ingesteld en mode van het programma is prerelease of release.
+if ($gebruiker.consolesluiten -eq 'Nee') {
+    Write-Host "De console window wordt niet verborgen omdat dit is ingesteld in de instellingen."
+    return;
 }
-# Functie om het hoofdmenu te tonen
+if ("alpha","beta" -contains($programma.mode)) {
+    Write-Host "De console window wordt niet verborgen omdat dit een alpha of beta versie is."
+    return;
+}
+
+if ($hwnd -ne [System.IntPtr]::Zero) {
+    # When you got HWND of the console window:
+    # (It would appear that Windows Console Host is the default terminal application)
+    $null = $ShowWindowAsync::ShowWindowAsync($hwnd, 0)
+  } else {
+    # When you failed to get HWND of the console window:
+    # (It would appear that Windows Terminal is the default terminal application)
+
+    # Mark the current console window with a unique string.
+    $UniqueWindowTitle = New-Guid
+    $Host.UI.RawUI.WindowTitle = $UniqueWindowTitle
+    
+    # Search the process that has the window title generated above.
+    $TerminalProcess = (Get-Process | Where-Object { $_.MainWindowTitle -eq $UniqueWindowTitle })
+    # Get the window handle of the terminal process.
+    # Note that GetConsoleWindow() in Win32 API returns the HWND of
+    # powershell.exe itself rather than the terminal process.
+    # When you call ShowWindowAsync(HWND, 0) with the HWND from GetConsoleWindow(),
+    # the Windows Terminal window will be just minimized rather than hidden.
+    $hwnd = $TerminalProcess.MainWindowHandle
+    if ($hwnd -ne [System.IntPtr]::Zero) {
+      # afsluiten terminal. Met $null zie je ook geen resultaat op he scherm. dus het woord "true" verschijnt niet.  
+      $null = $ShowWindowAsync::ShowWindowAsync($hwnd, 0) 
+      
+    } else {
+      Write-Host "Niet gelukt om de console window te verbergen." -ForegroundColor Red
+    }
+  }
+} # einde Hide-ConsoleWindow
+
+Function Remove_Logevents {
+
+# Deze functie verwijdert de gebeurtenissen uit het logboek
+
+# alleen starten als programma.mode niet de status alpha  heeft.
+if ("alpha" -contains($programma.mode)) {
+        Write-Host "De gebeurtenissen uit het logboek worden in de alpha versie niet automatisch opgeschoond."
+        return
+    }
+# Uitvoeren van deze functie is alleen mogelijk als de gebruiker dit heeft ingesteld in de instellingen.
+if ($gebruiker.logschonen -ne 'Ja') {
+    Write-Host "Er is ingesteld om de gebeurtenissen uit het logboek niet automatisch op te schonen."
+    return
+}
+# controleer of het logbestand bestaat
+if (!(Test-Path $logFile)) {
+        Write-Host "Er is geen logboek om op te schonen."
+        return
+    } 
+
+# Parameters
+$dagenBehouden = $gebruiker.aantaldagenlogs
+$grensDatum = (Get-Date).AddDays(-$dagenBehouden)
+# Buffer voor de regels die we willen behouden
+$regelsOmTeBehouden = @()
+# Aangeven dat we de grens hebben overschreden. Dit is nodig om te weten of er regels zijn verwijderd.
+$grensbereik = $false 
+
+# Hier starten we met het verwijderen van de logevents die ouder zijn dan de ingestelde dagen.
+
+# Lees het logbestand regel voor regel
+foreach ($regel in Get-Content $logFile) {
+    if ($regel -match '^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})') {
+        $regelDatum = [datetime]::ParseExact($matches[1], 'yyyy-MM-dd HH:mm:ss', $null)
+        
+        if ($regelDatum -lt $grensDatum) {
+            $grensbereik = $true
+            break  # Stop als deze regel ouder is dan de grens
+        }
+    }
+
+    # Voeg toe aan lijst zolang grens niet overschreden is
+    $regelsOmTeBehouden += $regel
+}
+
+# Overschrijf het originele bestand met de behouden regels
+# Als er geen regels meer zijn, dan wordt een leeg bestand gemaakt. 
+if ($regelsOmTeBehouden.Count -eq 0) {
+    New-Item -Path $logFile -ItemType File -Force | Out-Null
+    } else {
+    $regelsOmTeBehouden | Set-Content $logFile
+    }
+
+if ($grensbereik) {
+    $Message = "Er zijn gebeurtenissen in het logboek verwijderd die ouder zijn dan $dagenBehouden dagen."
+    Write-Host $Message
+    Write-Log -Message " " -Notimestamp
+    Write-Log -Message $Message
+} else {
+    Write-Host "Er zijn geen gebeurtenissen in het logboek, ouder dan $dagenBehouden dagen, die verwijderd moeten worden."
+}
+
+
+} # einde Remove_Logevents
+
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
     $mainForm = declareren_standaardvenster -titel "CE-tool omzetten Excel" -size_x 400 -size_y 300
@@ -857,6 +1340,9 @@ function Show-MainForm {
     $btnStart.Add_Click({
         $mainForm.Hide() # Zorg dat hoofdmenu sluit
         $Geselecteerd = SelectExcelForm
+        # Volgende regel kan als test gebruikt worden om een Excelbestand te forceren.
+        # Dit is handig als je het script wilt testen zonder een Excelbestand te selecteren.
+        # $Geselecteerd = "C:\Users\0101925\Desktop\temp\test.xlsx"
         if ($Geselecteerd -ne 'GEEN') {
             # Import-ExcelFile -ExcelPath $Geselecteerd
             # Exceldata laten zien
@@ -894,15 +1380,32 @@ function Show-MainForm {
     })
     $mainForm.Controls.Add($btnExit)
 
-    # zorgen dat deze venster altijd bovenop komt
-    $mainForm.TopMost = $true
-
+    # activeren van hoofdvenster
+    $mainForm.Add_Shown({$mainForm.Activate()})
+    # Hoofdmenu tonen
     $null = $mainForm.ShowDialog()
 } # einde Show-MainForm
 
 
 ############ start script ###############
 
-Controleerupdate;
+# Dit is de functie die zoekt naar een update van het script en deze uitvoert als er een update is.
+Search-Update;
 
+# Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
+$gebruiker = ReadSettings
+
+# Instellingen van de gebruiker opslaan zodat bij een mogelijke wijziging deze direct worden opgeslagen.
+SaveSettings $gebruiker
+
+# Automatisch de gebeurteniessenin het logboek verwijderen die ouder zijn dan de ingestelde dagen.
+Remove_Logevents
+
+# De gebruiker de tijd te geven om de tekst te lezen.
+# Start-Sleep -Seconds 3
+
+# Verbergen van de console venster 
+Hide-ConsoleWindow;
+
+# Dit is de hoofdloop van het script. Het blijft draaien totdat de gebruiker het afsluit.
 Show-MainForm;

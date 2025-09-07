@@ -1,5 +1,19 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.beta.250906
+- Changelog en Readme gewijzigd.
+- Bij start vh script wordt, als het niet in de release mode is, dit aangegeven.
+
+versie 1.0.0.alpha.250905
+- In Github een .gitignore bestand gemaakt om enkele mappen niet te synchroniseren.
+	release/
+	prerelease/
+	test/
+	setup/
+  Submappen gewijzigd. Map latest = release. Map cetool_1.1.0 is verplaatst naar submap setup
+- Changelog en Readme gemaakt (in Engels en Nederlands).
+- Aantal tijdelijke/test code weggehaald.
+
 versie 1.0.0.alpha.250901
 - Bij show_logboek is het mogelijkheid om automatisch te legen met vinkje voor de keuze. 
   En het aantal dagen kan je instellen. Na sluiten worden beide instellingen bewaard.
