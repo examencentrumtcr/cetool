@@ -4,3 +4,5 @@ setup/
 .vscode/
 temp/
 test/
+*.txt
+*.json
