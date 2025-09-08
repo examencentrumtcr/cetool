@@ -6,8 +6,8 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'alpha.250905' # extra label voor de versie
-    mode = 'alpha' # alpha, beta, prerelease of release
+    extralabel = 'beta.250905' # extra label voor de versie
+    mode = 'beta' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
 
