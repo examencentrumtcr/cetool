@@ -3,7 +3,7 @@
    
    Versienummer wordt volgens Semantic Versioning uitgevoerd (zie https://semver.org/lang/nl/)
    Dit programma is beschermt met auteursplicht door middel van de GNU GPL (https://www.gnu.org/licenses)
-   Lees ook het "README - NL" of "README - EN" bestand in hetzelfde map als dit script.
+   Lees ook het "README" bestand in hetzelfde map als dit script.
 #>
 
 $programma = @{
