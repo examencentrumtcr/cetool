@@ -1,20 +1,23 @@
 <# Centraal Examen tool om een excelbestand van Eduarte om te zetten naar een voor Facet geschikt format.
    Deze tool is gemaakt door Benvindo Neves.
-   Alle rechten voorbehouden.
+   
+   Versienummer wordt volgens Semantic Versioning uitgevoerd (zie https://semver.org/lang/nl/)
+   Dit programma is beschermt met auteursplicht door middel van de GNU GPL (https://www.gnu.org/licenses)
+   Lees ook het "README - NL" of "README - EN" bestand in hetzelfde map als dit script.
 #>
 
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'beta.250905' # extra label voor de versie
-    mode = 'beta' # alpha, beta, prerelease of release
+    extralabel = 'rc.1.250909' # extra label voor de versie
+    mode = 'prerelease' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
 
     <# Uitleg verschillende modes :
     alpha      : Logbestanden verwijderen is uit, Automatisch updates is uit en Console blijft open
     beta       : Automatisch updates is uit en Console blijft open
-    prerelease : Wordt gebruikt om alles te testen. Er wordt gecontroleerd op prerelease updates.
+    prerelease : Alle functies kunnen getest worden. Er wordt gecontroleerd op een prerelease update.
     release    : Normale gebruik
     #>
 }
@@ -39,7 +42,7 @@ $ShowWindowAsync = Add-Type -MemberDefinition $code -Name myAPI -PassThru
 $hwnd = (Get-Process -PID $pid).MainWindowHandle
 
 # Bestand waarin alle uitgevoerde stappen worden bijgehouden.
-$LogFile = "$PSScriptRoot\script_log.txt"
+$LogFile = "$PSScriptRoot\gebeurtenissen.log"
 
 # Bepalen van het bestand met gebruikersinstellingen.
 $gebruikersbestand = "$PSScriptRoot\gebruikersinstellingen.json"
@@ -211,7 +214,7 @@ $StandaardForm.StartPosition              = 'CenterScreen'
 # $StandaardForm.BackColor = "white"
 $StandaardForm.MaximizeBox = $False
 $StandaardForm.font                       = Standaardfont
-$StandaardForm.Icon                       = [System.Drawing.Icon]::ExtractAssociatedIcon('cetool_icoon.ico')
+$StandaardForm.Icon                       = [System.Drawing.Icon]::ExtractAssociatedIcon('script_icoon.ico')
 
 return $StandaardForm
 } # einde declareren_standaardvenster
@@ -305,28 +308,7 @@ function SaveSettings {
         [Parameter(Mandatory = $true)] [hashtable]$init
     )
 
-    <# Onderstaand is door ChatGpt gegenereerd. Nog niet getest.
-    
-    inlezen van het huidige gebruikersinstellingen bestand
-    if (test-path -path $gebruikersbestand -pathtype leaf) { 
-        $myObject = Get-Content -Path $gebruikersbestand | ConvertFrom-Json
-    } else {
-        $myObject = @{}
-    }
-
-    # waarden overzetten naar $myObject. nieuwe waarden worden toegevoegd. verwijderde waarden worden niet toegevoegd.
-    foreach( $property in $init.psobject.properties.name ) {
-        foreach( $subproperty in $init.$property.psobject.properties.name )
-        {
-            $myObject[$property][$subproperty] = $init.$property.$subproperty 
-        } # einde foreach $subproperty - loop 
-    } # einde foreach $property - loop    
-    #>
-
-    # schrijven naar bestand
-    # $myObject | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
-
-    # TRY-CATCH om te voorkomen dat het bestand niet goed wordt weggeschreven.
+     # TRY-CATCH om te voorkomen dat het bestand niet goed wordt weggeschreven.
     try {
         # Zet de inhoud van $init om naar JSON en schrijf het naar het gebruikersbestand
         $init | ConvertTo-Json -depth 1 | Set-Content -Path $gebruikersbestand
@@ -945,8 +927,7 @@ function Convert-ExcelToFacet {
         $zips += $zipPath
 
         Remove-Item $groepFolder -Recurse -Force
-        # Write-Log -Message "Map verwijderd: $groepFolder"
-        
+                
     }
 
     # tijdelijke map voor gezipte bestanden
@@ -1056,7 +1037,7 @@ function New-XmlFile {
         $afnamegroep.AppendChild($afname) | Out-Null
     }
 
-    # afnamegroep afsluiten en toevoegen --- Nog toevoegen1 en de andere hiervoor verwijderen!
+    # afnamegroep afsluiten en toevoegen 
     $afnamegroep.AppendChild($xmlDoc.CreateElement("aantalvarianten")).InnerText = $DataRows[0].kolom27
     $root.AppendChild($afnamegroep) | Out-Null
 
@@ -1088,13 +1069,15 @@ Function Search-Update {
     # alleen starten als programma.mode niet de status alpha of beta heeft.
     # De tekst die wordt weergegeven is er alleen ter informatie en controle.
     if ("alpha","beta" -contains($programma.mode)) {
-        Write-Host "Er is geen update beschikbaar voor dit script in de alpha of beta versie."
+        Write-Host "Er is geen update beschikbaar voor dit script in de $($programma.mode) versie."
         return
     }
 
     Write-Host "Controleren op een update."
 
-    $updateto = "0.0.0" # standaard waarde. Als er geen update is gevonden, dan blijft deze waarde 0.0.0. Let op, dit betekent dat er een probleem is met de update.
+    # Standaard waarde. Als er geen update is gevonden, dan blijft deze waarde 0.0.0. 
+    # Let op, dit betekent dat er een probleem is met de update.
+    $updateto = "0.0.0" 
     $huidigeversie = $programma.versie # huidige versie van het programma
 
     $url = $programma.github # dit is de url van de github repository 
@@ -1134,7 +1117,7 @@ Function Search-Update {
                 New-Item -ItemType Directory -Path (Split-Path $localFile) -Force | Out-Null
             }
 
-            # "Bestand downloaden naar de map $tijdelijkepad."
+            # Bestand downloaden naar de map $tijdelijkepad.
             Invoke-WebRequest -Uri $item.download_url -OutFile $localFile
             
             # bepaal laatste versie van het script
@@ -1218,7 +1201,7 @@ if ($gebruiker.consolesluiten -eq 'Nee') {
     return;
 }
 if ("alpha","beta" -contains($programma.mode)) {
-    Write-Host "De console window wordt niet verborgen omdat dit een alpha of beta versie is."
+    Write-Host "De console window wordt niet verborgen omdat dit een $($programma.mode) versie is."
     return;
 }
 
@@ -1314,8 +1297,31 @@ if ($grensbereik) {
     Write-Host "Er zijn geen gebeurtenissen in het logboek, ouder dan $dagenBehouden dagen, die verwijderd moeten worden."
 }
 
-
 } # einde Remove_Logevents
+
+# Deze functie voert een aantal opschoon acties uit bij het begin van het script.
+function Cleanupfiles {
+
+    Write-Log "Controleren of er oude bestanden zijn om op te schonen."
+    # als bestand cetool_icoon.ico bestaat, dan deze verwijderen.
+    $oudeicoon = "$PSScriptRoot\cetool_icoon.ico"
+    if (Test-Path $oudeicoon) {
+        Write-Host "Verwijderen van $oudeicoon"
+        Remove-Item $oudeicoon -Force
+    }   
+    # als script_log.txt bestaat dan de naam wijzigen in $LogFile
+    $oudescriptlog = "$PSScriptRoot\script_log.txt"
+    if (Test-Path $oudescriptlog) {
+        # als $LogFile ook bestaat alleen het oude verwijderen
+        if (Test-Path $LogFile) {
+                Write-Host "Verwijderen van $oudescriptlog"
+                Remove-Item $oudescriptlog -Force
+        } else {
+                Write-Host "Naam van logboek wijzigen naar $logFile"
+                Rename-Item -Path $oudescriptlog -NewName $LogFile
+        }
+    }
+} # einde Cleanupfiles
 
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
@@ -1389,7 +1395,10 @@ function Show-MainForm {
 # Dit is de functie die zoekt naar een update van het script en deze uitvoert als er een update is.
 Search-Update;
 
-# Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object
+# Dit is de functie die een aantal opschoon acties uitvoert bij het begin van het script.
+Cleanupfiles;
+
+# Dit is de functie die de instellingen van de gebruiker leest en teruggeeft als een object.
 $gebruiker = ReadSettings
 
 # Instellingen van de gebruiker opslaan zodat bij een mogelijke wijziging deze direct worden opgeslagen.
@@ -1401,7 +1410,7 @@ Remove_Logevents
 # De gebruiker de tijd te geven om de tekst te lezen.
 Start-Sleep -Seconds 3
 
-# Verbergen van de console venster 
+# Verbergen van de console venster.
 Hide-ConsoleWindow;
 
 # Dit is de hoofdloop van het script. Het blijft draaien totdat de gebruiker het afsluit.

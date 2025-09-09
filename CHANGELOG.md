@@ -21,6 +21,7 @@ Alle belangrijke wijzigingen in dit project worden hier gedocumenteerd.
   - logboek automatisch legen (ja/nee),  
   - aantal dagen waarna gebeurtenissen worden verwijderd,  
   - console sluiten (ja/nee).  
+- Bij start van het script worden een aantal opschoon acties uitgevoerd.
 
 ### Fixed
 - Probleem opgelost bij het vergelijken van versienummers (werden eerder als karakters gezien).  

@@ -1,5 +1,11 @@
 # Changelog van script Ce-tool.
 
+versie 1.0.0.rc.1.250909
+- Beta versie is getest door Rob. geen opmerkingen.
+- Enkele tekstuele wijzigingen in de console bij meldingen over alpha en beta versies.
+- Function Cleanupfiles aangemaakt om enkele wijzigingen bij de start uit te voeren.
+- Scripticoon en logboek hebben een andere naam. Oude logboeknaam wordt gewijzigd naar nieuwe naam.
+
 versie 1.0.0.beta.250906
 - Changelog en Readme gewijzigd.
 - Bij start vh script wordt, als het niet in de release mode is, dit aangegeven.
