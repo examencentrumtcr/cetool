@@ -4,7 +4,7 @@ Een tool om Eduarte-examenbestanden om te zetten naar het Facet-formaat
 
 ## 1. Introductie
 
-Cetool is ontwikkeld voor mbo-scholen in Nederland die **Facet** gebruiken om digitale examens klaar te zetten.
+Cetool is ontwikkeld voor de mbo-school Techniek College Rotterdam in Nederland waar **Facet** wordt gebruikt om digitale examens klaar te zetten.
 
 Facet heeft specifieke gegevens nodig, zoals studenteninformatie, groepen, examentypen en examendata. Deze gegevens komen uit het studentenadministratiesysteem **Eduarte** in de vorm van een Excel-bestand. Omdat Facet alleen XML-bestanden kan verwerken, moet dit bestand eerst worden omgezet. Cetool automatiseert dit proces.
 
@@ -105,13 +105,13 @@ Het project bevat de volgende bestanden en mappen:
 
 ```
 Cetool.ps1                        Hoofdscript
-Cetool_icoon.ico                  Programma-icoon
+script_icoon.ico                  Icoontje gebruikt door het script
 Logboek.png                       Afbeelding gebruikt door het script
 start.png                         Afbeelding gebruikt door het script
 stoppen.png                       Afbeelding gebruikt door het script
 Snelkoppeling_maken.ps1           Tool om snelkoppeling te maken
 Wijzig_Executionpolicy_bypass.bat Tool om PowerShell uitvoeringsbeleid op 'Bypass' te zetten
-Changelog.txt                     Lijst met wijzigingen per versie
+Changelog.md                      Lijst met wijzigingen per versie
 Readme.md                         Deze documentatie
 License                           GNU General Public Licentie overeenkomst
 ```
@@ -150,6 +150,6 @@ Mocht je een fout ontdekken, meld dit dan via [GitHub Issues](https://github.com
 
 ## 9. Changelog
 
-Bekijk de [Changelog](https://github.com/examencentrumtcr/cetool/tree/main/Changelog.txt) voor details.
+Bekijk de [Changelog](https://github.com/examencentrumtcr/cetool/tree/main/CHANGELOG.md) voor details.
 
 ---

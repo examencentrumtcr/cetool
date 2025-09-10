@@ -9,8 +9,8 @@
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = 'rc.1.250909' # extra label voor de versie
-    mode = 'prerelease' # alpha, beta, prerelease of release
+    extralabel = '+13.250910' # extra label voor de versie
+    mode = 'release' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"
 
@@ -1302,11 +1302,12 @@ if ($grensbereik) {
 # Deze functie voert een aantal opschoon acties uit bij het begin van het script.
 function Cleanupfiles {
 
-    Write-Log "Controleren of er oude bestanden zijn om op te schonen."
     # als bestand cetool_icoon.ico bestaat, dan deze verwijderen.
     $oudeicoon = "$PSScriptRoot\cetool_icoon.ico"
     if (Test-Path $oudeicoon) {
         Write-Host "Verwijderen van $oudeicoon"
+        Write-Log -Message " " -Notimestamp
+        Write-Log -Message "Verwijderen van $oudeicoon"
         Remove-Item $oudeicoon -Force
     }   
     # als script_log.txt bestaat dan de naam wijzigen in $LogFile
@@ -1315,9 +1316,13 @@ function Cleanupfiles {
         # als $LogFile ook bestaat alleen het oude verwijderen
         if (Test-Path $LogFile) {
                 Write-Host "Verwijderen van $oudescriptlog"
+                Write-Log -Message " " -Notimestamp
+                Write-Log -Message "Verwijderen van $oudescriptlog"
                 Remove-Item $oudescriptlog -Force
         } else {
                 Write-Host "Naam van logboek wijzigen naar $logFile"
+                Write-Log -Message " " -Notimestamp
+                Write-Log -Message "Naam van logboek wijzigen naar $logFile"
                 Rename-Item -Path $oudescriptlog -NewName $LogFile
         }
     }
@@ -1341,17 +1346,18 @@ function Show-MainForm {
     $btnStart.ImageAlign = "MiddleLeft"
     $btnStart.BackColor = "White"
     $btnStart.Add_Click({
-        $mainForm.Hide() # Zorg dat hoofdmenu sluit
+   
         $Geselecteerd = SelectExcelForm
         # Volgende regel kan als test gebruikt worden om een Excelbestand te forceren.
         # Dit is handig als je het script wilt testen zonder een Excelbestand te selecteren.
         # $Geselecteerd = "C:\Users\0101925\Desktop\temp\test.xlsx"
         if ($Geselecteerd -ne 'GEEN') {
-            # Import-ExcelFile -ExcelPath $Geselecteerd
-            # Exceldata laten zien
-            Show-ExcelForm -ExcelPath $Geselecteerd
+            
+            $mainForm.Hide() # Zorg dat hoofdmenu sluit
+            Show-ExcelForm -ExcelPath $Geselecteerd # Exceldata laten zien
+            $mainForm.Show() # Zorg dat hoofdmenu weer opent
         }
-        $mainForm.Show()
+
     })
     $mainForm.Controls.Add($btnStart)
 
