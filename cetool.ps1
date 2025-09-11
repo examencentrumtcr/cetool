@@ -1330,7 +1330,8 @@ function Cleanupfiles {
 
 # Deze functie toont het hoofdmenu van de applicatie
 function Show-MainForm {
-    $mainForm = declareren_standaardvenster -titel "CE-tool omzetten Excel" -size_x 400 -size_y 300
+    $versie = $programma.versie
+    $mainForm = declareren_standaardvenster -titel "CE-tool versie $versie" -size_x 400 -size_y 300
 
     # Icoontjes laden
     $startIcon = Get-PNGImage "$PSScriptRoot\start.png"
