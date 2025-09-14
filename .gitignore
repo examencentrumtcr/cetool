@@ -1,9 +1,5 @@
-setup/
-release/
-prerelease/
 .vscode/
 temp/
 test/
 *.txt
-*.json
-*.log
+
