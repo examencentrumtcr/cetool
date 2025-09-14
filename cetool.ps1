@@ -3,13 +3,13 @@
    
    Versienummer wordt volgens Semantic Versioning uitgevoerd (zie https://semver.org/lang/nl/)
    Dit programma is beschermt met auteursplicht door middel van de GNU GPL (https://www.gnu.org/licenses)
-   Lees ook het "README" bestand in hetzelfde map als dit script.
+   Lees ook de "README", "CHANGELOG" en "LICENSE" bestanden in hetzelfde map als dit script.
 #>
 
 $programma = @{
     naam = 'cetool' # naam van het programma
     versie = '1.0.0' # versie van het programma
-    extralabel = '+13.250911' # extra label voor de versie
+    extralabel = '+13.250912' # extra label voor de versie
     mode = 'release' # alpha, beta, prerelease of release
     auteur = 'Benvindo Neves'
     github = "https://api.github.com/repos/examencentrumtcr/cetool/contents/"

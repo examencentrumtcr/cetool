@@ -2,7 +2,7 @@
 
 Alle belangrijke wijzigingen in dit project worden hier gedocumenteerd.
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2025-09-12
 ### Added
 - Mogelijkheid om het logboek handmatig te legen of automatisch bij de start van het script oudere gebeurtenissen te verwijderen.  
 - Automatisch updaten van het script via GitHub.  

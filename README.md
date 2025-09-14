@@ -1,10 +1,10 @@
 # Cetool
 
-Een tool om Eduarte-examenbestanden om te zetten naar het Facet-formaat
+Een tool om Eduarte-examenbestanden om te zetten naar het Facet-format.
 
 ## 1. Introductie
 
-Cetool is ontwikkeld voor de mbo-school Techniek College Rotterdam in Nederland waar **Facet** wordt gebruikt om digitale examens klaar te zetten.
+Cetool is ontwikkeld voor de mbo-school **Techniek College Rotterdam** in Nederland waar **Facet** wordt gebruikt om digitale examens klaar te zetten.
 
 Facet heeft specifieke gegevens nodig, zoals studenteninformatie, groepen, examentypen en examendata. Deze gegevens komen uit het studentenadministratiesysteem **Eduarte** in de vorm van een Excel-bestand. Omdat Facet alleen XML-bestanden kan verwerken, moet dit bestand eerst worden omgezet. Cetool automatiseert dit proces.
 
@@ -20,14 +20,14 @@ Daarnaast accepteert Facet alleen groepen studenten van één school. Om examens
 * **Logboek**
 
   * Bewaart gebeurtenissen in een logboek.
-  * Het logboek kan handmatig worden geleegd of automatisch oude meldingen verwijderen bij het opstarten (ouder dan ingesteld aantal dagen).
+  * Het logboek kan handmatig of automatisch bij het opstarten worden geleegd. Bij het opstarten worden gebeurtenissen ouder dan de ingestelde aantal dagen verwijderd.
 
 * **Voorkeuren**
 
   * Slaat gebruikersinstellingen op, zoals:
 
     * Map met in te lezen Excel-bestanden
-    * Map voor de uitvoerbestanden (ZIP)
+    * Map voor de uitvoerbestand (ZIP)
     * Naam van het uitvoerbestand
     * Automatisch logboekbeheer
     * Sluitgedrag van de console
@@ -35,7 +35,7 @@ Daarnaast accepteert Facet alleen groepen studenten van één school. Om examens
 * **Automatische updates**
 
   * Haalt updates direct op via GitHub.
-  * Beheerders kunnen ook prerelease-versies downloaden.
+  * Beheerders kunnen ook een prerelease-versie downloaden.
 
 ---
 
