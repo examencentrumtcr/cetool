@@ -6,3 +6,4 @@ temp/
 test/
 *.txt
 *.json
+*.log
