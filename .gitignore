@@ -1,5 +1,4 @@
-release/
-prerelease/
-setup/
+*.log
+*.json
 *.log
 *.json
