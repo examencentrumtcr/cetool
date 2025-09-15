@@ -1,4 +1,7 @@
 .vscode/
+release/
+prerelease/
+setup/
 temp/
 test/
 *.txt
